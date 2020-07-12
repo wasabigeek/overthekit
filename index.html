@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.0/howler.min.js"></script>
+</head>
+<body>
+  <script type="text/javascript">
+    document.body.onload = play;
+
+    function Note(instrument) {
+      this.instrument = instrument;
+      this.audio = new Audio('acoustic-kit/' + instrument + '.wav');
+
+      this.play = function() {
+        this.audio.play();
+      }
+    }
+
+    function play() {
+      var track = [
+        new Note('kick'),
+        new Note('kick'),
+        new Note('snare'),
+        new Note('hihat'),
+        new Note('kick'),
+        new Note('kick'),
+        new Note('snare'),
+        new Note('hihat'),
+      ]
+      track.forEach(function(note, index) {
+        setTimeout(function() {
+            note.play();
+        }, 500 * (index + 1));
+      })
+    }
+  </script>
+</body>
+</html>
