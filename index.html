@@ -11,31 +11,43 @@
   <script type="text/javascript">
     window.onload = init;
     var context;
-    var bufferLoader;
+    var drumkit;
 
-    document.getElementById('play').onclick = function() { RhythmSample.play(bufferLoader.bufferList) }
+    document.getElementById('play').onclick = function() { RhythmSample.play(drumkit) }
 
     function init() {
       // Fix up prefixing
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
       context = new AudioContext();
 
-      bufferLoader = new BufferLoader(
-        context,
+      drumkit = new DrumKit(context);
+    }
+
+    function DrumKit(audioContext) {
+      this.loader = new BufferLoader(
+        audioContext,
         [
           '/acoustic-kit/kick.wav',
           '/acoustic-kit/snare.wav',
           '/acoustic-kit/hihat.wav',
         ]
-      );
+        );
+      this.loader.load();
 
-      bufferLoader.load();
+      // functions since they are asynchronously loaded
+      this.kickSound = function() { return this.loader.bufferList[0] };
+      this.snareSound = function() { return this.loader.bufferList[1] };
+      this.hihatSound = function() { return this.loader.bufferList[2] };
     }
+
+    // function DrumMachine(kit) {
+    //   this.kit =
+    // }
 
     var RhythmSample = {
     };
 
-    RhythmSample.play = function(bufferList) {
+    RhythmSample.play = function(drumkit) {
       function playSound(buffer, time) {
         var source = context.createBufferSource();
         source.buffer = buffer;
@@ -46,12 +58,9 @@
         source.start(time);
       }
 
-      var kick = bufferList[0];
-      var snare = bufferList[1];
-      var hihat = bufferList[2];
-      // var kick = BUFFERS.kick;
-      // var snare = BUFFERS.snare;
-      // var hihat = BUFFERS.hihat;
+      var kick = drumkit.kickSound();
+      var snare = drumkit.snareSound();
+      var hihat = drumkit.hihatSound();
 
       // We'll start playing the rhythm 100 milliseconds from "now"
       var startTime = context.currentTime + 0.100;
