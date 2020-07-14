@@ -5,15 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <script type="text/javascript" src="/js/bufferLoader.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
 </head>
 <body>
+  <div id="score"></div>
   <button id="play">Play</button>
   <script type="text/javascript">
     window.onload = init;
     var context;
     var drumkit;
 
-    document.getElementById('play').onclick = function() { RhythmSample.play(drumkit) }
+    function createMeasure(setup) {
+      var VF = Vex.Flow;
+      var vf = new VF.Factory({
+        renderer: {
+          elementId: "score",
+          backend: VF.Renderer.Backends.SVG,
+          width: 450,
+          height: 140,
+        },
+      });
+      var stave = vf.Stave().addClef('percussion');
+
+      setup(vf);
+
+      vf.Formatter()
+        .joinVoices(vf.getVoices())
+        .formatToStave(vf.getVoices(), stave);
+
+      vf.draw();
+    }
 
     function init() {
       // Fix up prefixing
@@ -21,6 +42,27 @@
       context = new AudioContext();
 
       drumkit = new DrumKit(context);
+
+      document.getElementById('play').onclick = function() { RhythmSample.play(drumkit) }
+      createMeasure(function(vf) {
+        var voice0 = vf.Voice().addTickables([
+          vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
+          vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
+          vf.StaveNote({ keys: ['g/5/x2', 'c/5'], duration: '8' }),
+          vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
+          vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
+          vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
+          vf.StaveNote({ keys: ['g/5/x2', 'c/5'], duration: '8' }),
+          vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
+        ]);
+
+        var voice1 = vf.Voice().addTickables([
+          vf.StaveNote({ keys: ['f/4'], duration: '2', stem_direction: -1 }),
+          vf.StaveNote({ keys: ['f/4'], duration: '2', stem_direction: -1 }),
+        ]);
+
+        vf.Beam({ notes: voice0.getTickables() });
+      });
     }
 
     function DrumKit(audioContext) {
