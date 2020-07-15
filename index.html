@@ -115,7 +115,7 @@
       ]
 
       generateNotation(score);
-      document.getElementById('play').onclick = function() { RhythmSample.play(drumkit) }
+      document.getElementById('play').onclick = function() { RhythmSample.play(drumkit, score) }
     }
 
     function DrumKit(audioContext) {
@@ -142,7 +142,17 @@
     var RhythmSample = {
     };
 
-    RhythmSample.play = function(drumkit) {
+    function timeInTempo(duration, tempo) {
+      switch (duration) {
+        case DURATION_EIGHTH:
+          return (60 / tempo) / 2;
+          break;
+        default:
+          break;
+      }
+    }
+
+    RhythmSample.play = function(drumkit, score) {
       function playSound(buffer, time) {
         var source = context.createBufferSource();
         source.buffer = buffer;
@@ -156,28 +166,35 @@
       var kick = drumkit.kickSound();
       var snare = drumkit.snareSound();
       var hihat = drumkit.hihatSound();
+      function soundFor(note) {
+        switch (note.type) {
+          case NOTE_HIHAT:
+            return hihat;
+            break;
+          case NOTE_SNARE:
+            return snare;
+            break;
+          case NOTE_KICK:
+            return kick;
+            break;
+          default:
+            break;
+        }
+      }
 
       // We'll start playing the rhythm 100 milliseconds from "now"
       var startTime = context.currentTime + 0.100;
       var tempo = 80; // BPM (beats per minute)
       var eighthNoteTime = (60 / tempo) / 2;
 
-      // Play 2 bars of the following:
-      for (var bar = 0; bar < 2; bar++) {
-        var time = startTime + bar * 8 * eighthNoteTime;
-        // Play the bass (kick) drum on beats 1, 5
-        playSound(kick, time);
-        playSound(kick, time + 4 * eighthNoteTime);
-
-        // Play the snare drum on beats 3, 7
-        playSound(snare, time + 2 * eighthNoteTime);
-        playSound(snare, time + 6 * eighthNoteTime);
-
-        // Play the hi-hat every eighthh note.
-        for (var i = 0; i < 8; ++i) {
-          playSound(hihat, time + i * eighthNoteTime);
-        }
-      }
+      var cumulativeTime = startTime;
+      var plays = score.forEach(function(noteGroup) {
+        var time = timeInTempo(noteGroup.duration, tempo);
+        noteGroup.notes.forEach(function(note) {
+          playSound(soundFor(note), cumulativeTime);
+        });
+        cumulativeTime += time;
+      });
     };
   </script>
 </body>
