@@ -22,6 +22,7 @@
     function Note(type) {
       this.type = type;
     }
+    DURATION_SIXTEENTH = 'sixteenth';
     DURATION_EIGHTH = 'eighth';
     DURATION_QUARTER = 'quarter';
     function NoteGroup(notes, duration) {
@@ -53,6 +54,9 @@
       switch (noteGroup.duration) {
         case DURATION_EIGHTH:
           vfDuration = '8';
+          break;
+        case DURATION_SIXTEENTH:
+          vfDuration = '16';
           break;
         default:
           break;
@@ -104,12 +108,14 @@
       drumkit = new DrumKit(context);
 
       var score = [
-        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_KICK)], DURATION_EIGHTH),
-        new NoteGroup([new Note(NOTE_HIHAT)], DURATION_EIGHTH),
+        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_KICK)], DURATION_SIXTEENTH),
+        new NoteGroup([new Note(NOTE_HIHAT)], DURATION_SIXTEENTH),
+        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_KICK)], DURATION_SIXTEENTH),
+        new NoteGroup([new Note(NOTE_HIHAT)], DURATION_SIXTEENTH),
         new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_SNARE)], DURATION_EIGHTH),
         new NoteGroup([new Note(NOTE_HIHAT)], DURATION_EIGHTH),
         new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_KICK)], DURATION_EIGHTH),
-        new NoteGroup([new Note(NOTE_HIHAT)], DURATION_EIGHTH),
+        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_KICK)], DURATION_EIGHTH),
         new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_SNARE)], DURATION_EIGHTH),
         new NoteGroup([new Note(NOTE_HIHAT)], DURATION_EIGHTH),
       ]
@@ -146,6 +152,9 @@
       switch (duration) {
         case DURATION_EIGHTH:
           return (60 / tempo) / 2;
+          break;
+        case DURATION_SIXTEENTH:
+          return (60 / tempo) / 4;
           break;
         default:
           break;
