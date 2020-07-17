@@ -24,6 +24,15 @@
     window.onload = init;
     var context;
     var drumkit;
+    var VF = Vex.Flow;
+    var vf = new VF.Factory({
+      renderer: {
+        elementId: "score",
+        backend: VF.Renderer.Backends.SVG,
+        width: 450,
+        height: 140,
+      },
+    });
 
     NOTE_SNARE = 'snare';
     NOTE_KICK = 'kick';
@@ -99,15 +108,6 @@
     }
 
     function createMeasure(setup) {
-      var VF = Vex.Flow;
-      var vf = new VF.Factory({
-        renderer: {
-          elementId: "score",
-          backend: VF.Renderer.Backends.SVG,
-          width: 450,
-          height: 140,
-        },
-      });
       var stave = vf.Stave().addClef('percussion');
 
       setup(vf);
@@ -120,6 +120,9 @@
     }
 
     function generateNotation(score) {
+      var context = vf.getContext()
+      context.clear();
+
       createMeasure(function(vf) {
         var voice0 = vf.Voice().addTickables(
           score.map(function(noteGroup) {
