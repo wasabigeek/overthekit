@@ -8,6 +8,12 @@
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
 </head>
 <body>
+  <label for="sticking">
+    Sticking:
+    <input id="sticking" value="RLKRLKRLKRLKRLRL">
+  </label>
+  <button id="change_sticking">Change</button>
+  <br /><br /><br />
   <div id="score"></div>
   <label for="tempo">
     Tempo:
@@ -71,6 +77,27 @@
       }
     }
 
+    function generateScore(sticking) {
+      var newScore = [];
+      for (var stick of sticking) {
+        var note;
+        switch (stick) {
+          case 'R' || 'L':
+            note = new Note(NOTE_SNARE);
+            break;
+          case 'K':
+            note = new Note(NOTE_KICK);
+            break;
+          default:
+            break;
+        }
+
+        newScore.push(new NoteGroup([note], DURATION_SIXTEENTH))
+      }
+
+      return newScore;
+    }
+
     function createMeasure(setup) {
       var VF = Vex.Flow;
       var vf = new VF.Factory({
@@ -122,8 +149,14 @@
         new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_SNARE)], DURATION_EIGHTH),
         new NoteGroup([new Note(NOTE_HIHAT)], DURATION_EIGHTH),
       ]
-
       generateNotation(score);
+
+      document.getElementById('change_sticking').onclick = function() {
+        var newSticking = document.getElementById('sticking').value;
+        score = generateScore(newSticking);
+        generateNotation(score);
+      }
+
       document.getElementById('play').onclick = function() {
         var tempo = document.getElementById('tempo').value;
         RhythmSample.play(drumkit, score, tempo)
