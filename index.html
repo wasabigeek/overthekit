@@ -9,12 +9,15 @@
 </head>
 <body>
   <div id="score"></div>
+  <label for="tempo">
+    Tempo:
+    <input id="tempo" value="80" type="number">
+  </label>
   <button id="play">Play</button>
   <script type="text/javascript">
     window.onload = init;
     var context;
     var drumkit;
-
 
     NOTE_SNARE = 'snare';
     NOTE_KICK = 'kick';
@@ -121,7 +124,10 @@
       ]
 
       generateNotation(score);
-      document.getElementById('play').onclick = function() { RhythmSample.play(drumkit, score) }
+      document.getElementById('play').onclick = function() {
+        var tempo = document.getElementById('tempo').value;
+        RhythmSample.play(drumkit, score, tempo)
+      }
     }
 
     function DrumKit(audioContext) {
@@ -161,7 +167,7 @@
       }
     }
 
-    RhythmSample.play = function(drumkit, score) {
+    RhythmSample.play = function(drumkit, score, tempo) {
       function playSound(buffer, time) {
         var source = context.createBufferSource();
         source.buffer = buffer;
@@ -193,8 +199,6 @@
 
       // We'll start playing the rhythm 100 milliseconds from "now"
       var startTime = context.currentTime + 0.100;
-      var tempo = 80; // BPM (beats per minute)
-      var eighthNoteTime = (60 / tempo) / 2;
 
       var cumulativeTime = startTime;
       var plays = score.forEach(function(noteGroup) {
