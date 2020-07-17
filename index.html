@@ -91,7 +91,10 @@
       for (var stick of sticking) {
         var note;
         switch (stick) {
-          case 'R' || 'L':
+          case 'R':
+            note = new Note(NOTE_SNARE);
+            break;
+          case 'L':
             note = new Note(NOTE_SNARE);
             break;
           case 'K':
