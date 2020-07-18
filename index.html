@@ -34,11 +34,17 @@
       },
     });
 
-    NOTE_SNARE = 'snare';
-    NOTE_KICK = 'kick';
-    NOTE_HIHAT = 'hihat';
-    function Note(type) {
-      this.type = type;
+    function Instrument(options) {
+      this.verticalPosition = options.verticalPosition;
+      this.sound = options.sound;
+    }
+
+    function Note(options) {
+      this.instrument = options.instrument;
+
+      this.verticalPosition = this.instrument.verticalPosition;
+      // this has to be lazily retrieved now because the AudioContext needs to load
+      this.getSound = this.instrument.sound;
     }
     DURATION_SIXTEENTH = 'sixteenth';
     DURATION_EIGHTH = 'eighth';
@@ -50,23 +56,7 @@
     }
 
     function toNotation(noteGroup) {
-      var keys = noteGroup.notes.map(function(note) {
-        var voice;
-        switch (note.type) {
-          case NOTE_HIHAT:
-            voice = 'g/5/x2';
-            break;
-          case NOTE_SNARE:
-            voice = 'c/5';
-            break;
-          case NOTE_KICK:
-            voice = 'f/4';
-            break;
-          default:
-            break;
-        }
-        return voice;
-      })
+      var keys = noteGroup.notes.map(function(note) { return note.verticalPosition });
 
       var vfDuration;
       switch (noteGroup.duration) {
@@ -84,30 +74,6 @@
         keys: keys,
         duration: vfDuration
       }
-    }
-
-    function generateScore(sticking) {
-      var newScore = [];
-      for (var stick of sticking) {
-        var note;
-        switch (stick) {
-          case 'R':
-            note = new Note(NOTE_SNARE);
-            break;
-          case 'L':
-            note = new Note(NOTE_SNARE);
-            break;
-          case 'K':
-            note = new Note(NOTE_KICK);
-            break;
-          default:
-            break;
-        }
-
-        newScore.push(new NoteGroup([note], DURATION_SIXTEENTH))
-      }
-
-      return newScore;
     }
 
     function createMeasure(setup) {
@@ -142,18 +108,45 @@
       context = new AudioContext();
 
       drumkit = new DrumKit(context);
+      var snareInstrument = new Instrument({ verticalPosition: 'c/5', sound: drumkit.snareSound })
+      var hihatInstrument = new Instrument({ verticalPosition: 'g/5/x2', sound: drumkit.hihatSound })
+      var kickInstrument = new Instrument({ verticalPosition: 'f/4', sound: drumkit.kickSound })
+
+      function generateScore(sticking) {
+        var newScore = [];
+        for (var stick of sticking) {
+          var note;
+          switch (stick) {
+            case 'R':
+              note = new Note({ instrument: snareInstrument });
+              break;
+            case 'L':
+              note = new Note({ instrument: snareInstrument });
+              break;
+            case 'K':
+              note = new Note({ instrument: kickInstrument });
+              break;
+            default:
+              break;
+          }
+
+          newScore.push(new NoteGroup([note], DURATION_SIXTEENTH))
+        }
+
+        return newScore;
+      }
 
       var score = [
-        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_KICK)], DURATION_SIXTEENTH),
-        new NoteGroup([new Note(NOTE_HIHAT)], DURATION_SIXTEENTH),
-        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_KICK)], DURATION_SIXTEENTH),
-        new NoteGroup([new Note(NOTE_HIHAT)], DURATION_SIXTEENTH),
-        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_SNARE)], DURATION_EIGHTH),
-        new NoteGroup([new Note(NOTE_HIHAT)], DURATION_EIGHTH),
-        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_KICK)], DURATION_EIGHTH),
-        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_KICK)], DURATION_EIGHTH),
-        new NoteGroup([new Note(NOTE_HIHAT), new Note(NOTE_SNARE)], DURATION_EIGHTH),
-        new NoteGroup([new Note(NOTE_HIHAT)], DURATION_EIGHTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: kickInstrument })], DURATION_SIXTEENTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument })], DURATION_SIXTEENTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: kickInstrument })], DURATION_SIXTEENTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument })], DURATION_SIXTEENTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: snareInstrument })], DURATION_EIGHTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument })], DURATION_EIGHTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: kickInstrument })], DURATION_EIGHTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: kickInstrument })], DURATION_EIGHTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: snareInstrument })], DURATION_EIGHTH),
+        new NoteGroup([new Note({ instrument: hihatInstrument })], DURATION_EIGHTH),
       ]
       generateNotation(score);
 
@@ -187,9 +180,12 @@
       this.loader.load();
 
       // functions since they are asynchronously loaded
-      this.kickSound = function() { return this.loader.bufferList[0] };
-      this.snareSound = function() { return this.loader.bufferList[1] };
-      this.hihatSound = function() { return this.loader.bufferList[2] };
+      kickSound = function() { return this.loader.bufferList[0] };
+      snareSound = function() { return this.loader.bufferList[1] };
+      hihatSound = function() { return this.loader.bufferList[2] };
+      this.kickSound = kickSound.bind(this);
+      this.snareSound = snareSound.bind(this);
+      this.hihatSound = hihatSound.bind(this);
     }
 
     // function DrumMachine(kit) {
@@ -223,25 +219,6 @@
         source.start(time);
       }
 
-      var kick = drumkit.kickSound();
-      var snare = drumkit.snareSound();
-      var hihat = drumkit.hihatSound();
-      function soundFor(note) {
-        switch (note.type) {
-          case NOTE_HIHAT:
-            return hihat;
-            break;
-          case NOTE_SNARE:
-            return snare;
-            break;
-          case NOTE_KICK:
-            return kick;
-            break;
-          default:
-            break;
-        }
-      }
-
       // We'll start playing the rhythm 100 milliseconds from "now"
       var startTime = context.currentTime + 0.100;
 
@@ -249,7 +226,7 @@
       var plays = score.forEach(function(noteGroup) {
         var time = timeInTempo(noteGroup.duration, tempo);
         noteGroup.notes.forEach(function(note) {
-          playSound(soundFor(note), cumulativeTime);
+          playSound(note.getSound(), cumulativeTime);
         });
         cumulativeTime += time;
       });
