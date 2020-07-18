@@ -41,6 +41,7 @@
 
     function Note(options) {
       this.instrument = options.instrument;
+      this.volume = options.volume;
 
       this.verticalPosition = this.instrument.verticalPosition;
       // this has to be lazily retrieved now because the AudioContext needs to load
@@ -102,32 +103,47 @@
       });
     }
 
+    // score (bars, play marker?, )
+    // bar (notes by positions?)
+    // note (duration, volume, instrument (voice + chart position))
+    // rendering
+    // player
+
+    // flams/drags? rolls? ghost notes (maybe that's an instrument? since it has a voice attached to it)?
+
     function init() {
       // Fix up prefixing
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
       context = new AudioContext();
 
       drumkit = new DrumKit(context);
+
       var snareInstrument = new Instrument({ verticalPosition: 'c/5', sound: drumkit.snareSound })
       var hihatInstrument = new Instrument({ verticalPosition: 'g/5/x2', sound: drumkit.hihatSound })
       var kickInstrument = new Instrument({ verticalPosition: 'f/4', sound: drumkit.kickSound })
+      var tom1Instrument = new Instrument({ verticalPosition: 'e/5', sound: drumkit.tom1Sound })
+      var tom2Instrument = new Instrument({ verticalPosition: 'd/5', sound: drumkit.tom2Sound })
+      var tom3Instrument = new Instrument({ verticalPosition: 'a/4', sound: drumkit.tom3Sound })
 
       function generateScore(sticking) {
         var newScore = [];
+        var handNotes = [
+          new Note({ instrument: snareInstrument, volume: volume }),
+          new Note({ instrument: hihatInstrument, volume: volume }),
+          new Note({ instrument: tom1Instrument, volume: volume }),
+          // new Note({ instrument: tom2Instrument, volume: volume }),
+          new Note({ instrument: tom3Instrument, volume: volume }),
+        ]
+
         for (var stick of sticking) {
           var note;
-          switch (stick) {
-            case 'R':
-              note = new Note({ instrument: snareInstrument });
-              break;
-            case 'L':
-              note = new Note({ instrument: snareInstrument });
-              break;
-            case 'K':
-              note = new Note({ instrument: kickInstrument });
-              break;
-            default:
-              break;
+          // attempt to make it sound slightly more organic with volume variations
+          var volume = 1 - Math.random() * 0.2;
+
+          if (stick.toUpperCase() == 'K') {
+            note = new Note({ instrument: kickInstrument, volume: volume });
+          } else {
+            note = handNotes[Math.round(Math.random() * (handNotes.length - 1))];
           }
 
           newScore.push(new NoteGroup([note], DURATION_SIXTEENTH))
@@ -136,18 +152,7 @@
         return newScore;
       }
 
-      var score = [
-        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: kickInstrument })], DURATION_SIXTEENTH),
-        new NoteGroup([new Note({ instrument: hihatInstrument })], DURATION_SIXTEENTH),
-        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: kickInstrument })], DURATION_SIXTEENTH),
-        new NoteGroup([new Note({ instrument: hihatInstrument })], DURATION_SIXTEENTH),
-        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: snareInstrument })], DURATION_EIGHTH),
-        new NoteGroup([new Note({ instrument: hihatInstrument })], DURATION_EIGHTH),
-        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: kickInstrument })], DURATION_EIGHTH),
-        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: kickInstrument })], DURATION_EIGHTH),
-        new NoteGroup([new Note({ instrument: hihatInstrument }), new Note({ instrument: snareInstrument })], DURATION_EIGHTH),
-        new NoteGroup([new Note({ instrument: hihatInstrument })], DURATION_EIGHTH),
-      ]
+      var score = generateScore(document.getElementById('sticking').value);
       generateNotation(score);
 
       document.getElementById('change_sticking').onclick = function() {
@@ -175,6 +180,9 @@
           '/acoustic-kit/kick.wav',
           '/acoustic-kit/snare.wav',
           '/acoustic-kit/hihat.wav',
+          '/acoustic-kit/tom1.wav',
+          '/acoustic-kit/tom2.wav',
+          '/acoustic-kit/tom3.wav',
         ]
         );
       this.loader.load();
@@ -183,14 +191,16 @@
       kickSound = function() { return this.loader.bufferList[0] };
       snareSound = function() { return this.loader.bufferList[1] };
       hihatSound = function() { return this.loader.bufferList[2] };
+      tom1Sound = function() { return this.loader.bufferList[3] };
+      tom2Sound = function() { return this.loader.bufferList[4] };
+      tom3Sound = function() { return this.loader.bufferList[5] };
       this.kickSound = kickSound.bind(this);
       this.snareSound = snareSound.bind(this);
       this.hihatSound = hihatSound.bind(this);
+      this.tom1Sound = tom1Sound.bind(this);
+      this.tom2Sound = tom2Sound.bind(this);
+      this.tom3Sound = tom3Sound.bind(this);
     }
-
-    // function DrumMachine(kit) {
-    //   this.kit =
-    // }
 
     var RhythmSample = {
     };
@@ -209,10 +219,17 @@
     }
 
     RhythmSample.play = function(drumkit, score, tempo) {
-      function playSound(buffer, time) {
+      function playSound(buffer, time, volume = 1) {
+
         var source = context.createBufferSource();
         source.buffer = buffer;
-        source.connect(context.destination);
+
+        var gainNode = context.createGain();
+        gainNode.gain.setValueAtTime(volume, time);
+        source.connect(gainNode);
+
+        gainNode.connect(context.destination);
+
         if (!source.start) {
           source.start = source.noteOn;
         }
@@ -226,7 +243,7 @@
       var plays = score.forEach(function(noteGroup) {
         var time = timeInTempo(noteGroup.duration, tempo);
         noteGroup.notes.forEach(function(note) {
-          playSound(note.getSound(), cumulativeTime);
+          playSound(note.getSound(), cumulativeTime, note.volume);
         });
         cumulativeTime += time;
       });
