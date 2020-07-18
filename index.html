@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height: 100%">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,19 +7,24 @@
   <script type="text/javascript" src="/js/bufferLoader.js"></script>
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
 </head>
-<body>
-  <label for="sticking">
-    Sticking:
-    <input id="sticking" value="RLKRLKRLKRLKRLRL" maxlength="16" minlength="16">
-  </label>
-  <button id="change_sticking">Change</button>
-  <br /><br /><br />
-  <div id="score"></div>
-  <label for="tempo">
-    Tempo:
-    <input id="tempo" value="80" type="number">
-  </label>
-  <button id="play">Play</button>
+<body style="text-align: center; display: flex; flex-direction: column; height: 100%; justify-content: center;">
+  <h1>Over the Kit</h1>
+  <p>Quickly hear how different voicings of a sticking pattern sound at speed.</p>
+  <form id="stickingForm" style="margin-bottom: 2rem;">
+    <label for="sticking">
+      Sticking:
+      <input id="sticking" value="RLKRLKRLKRLKRLRL" maxlength="16" minlength="16">
+    </label>
+    <button type="submit">Change</button>
+  </form>
+  <div id="score" style="margin-bottom: 2rem;"></div>
+  <form id="playerForm">
+    <label for="tempo">
+      Tempo:
+      <input id="tempo" value="120" max="400" type="number">
+    </label>
+    <button type="submit">Play</button>
+  </form>
   <script type="text/javascript">
     window.onload = init;
     var context;
@@ -30,7 +35,7 @@
         elementId: "score",
         backend: VF.Renderer.Backends.SVG,
         width: 450,
-        height: 140,
+        height: 100,
       },
     });
 
@@ -155,7 +160,8 @@
       var score = generateScore(document.getElementById('sticking').value);
       generateNotation(score);
 
-      document.getElementById('change_sticking').onclick = function() {
+      document.getElementById('stickingForm').onsubmit = function(e) {
+        e.preventDefault();
         var newSticking = document.getElementById('sticking').value;
 
         score = generateScore(newSticking);
@@ -167,7 +173,8 @@
         generateNotation(score);
       }
 
-      document.getElementById('play').onclick = function() {
+      document.getElementById('playerForm').onsubmit = function(e) {
+        e.preventDefault();
         var tempo = document.getElementById('tempo').value;
         RhythmSample.play(drumkit, score, tempo)
       }
