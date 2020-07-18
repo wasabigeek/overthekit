@@ -243,10 +243,21 @@
       var tom1Instrument = new Instrument({ verticalPosition: 'e/5', sound: drumkit.tom1Sound })
       var tom2Instrument = new Instrument({ verticalPosition: 'd/5', sound: drumkit.tom2Sound })
       var tom3Instrument = new Instrument({ verticalPosition: 'a/4', sound: drumkit.tom3Sound })
+      function getOrchestrations() {
+        var orchestrations = [];
+        // this is coupled to the UI / instruments for simplicity, might want to relook this
+        if (document.getElementById('hihatCheckbox').checked) { orchestrations.push(hihatInstrument) }
+        if (document.getElementById('snareCheckbox').checked) { orchestrations.push(snareInstrument) }
+        if (document.getElementById('hiTomCheckbox').checked) { orchestrations.push(tom1Instrument) }
+        if (document.getElementById('midTomCheckbox').checked) { orchestrations.push(tom2Instrument) }
+        if (document.getElementById('floorTomCheckbox').checked) { orchestrations.push(tom3Instrument) }
+
+        return orchestrations;
+      }
 
       function generateScore(sticking, options = {}) {
         var newScore = [];
-        var orchestrations = options.orchestrations || [hihatInstrument, snareInstrument, kickInstrument, tom1Instrument, tom3Instrument];
+        var orchestrations = options.orchestrations || getOrchestrations();
 
         for (var stick of sticking) {
           var note;
@@ -272,12 +283,7 @@
       document.getElementById('stickingForm').onsubmit = function(e) {
         e.preventDefault();
         var newSticking = document.getElementById('sticking').value;
-        var orchestrations = [];
-        if (document.getElementById('hihatCheckbox').checked) { orchestrations.push(hihatInstrument) }
-        if (document.getElementById('snareCheckbox').checked) { orchestrations.push(snareInstrument) }
-        if (document.getElementById('hiTomCheckbox').checked) { orchestrations.push(tom1Instrument) }
-        if (document.getElementById('midTomCheckbox').checked) { orchestrations.push(tom2Instrument) }
-        if (document.getElementById('floorTomCheckbox').checked) { orchestrations.push(tom3Instrument) }
+        var orchestrations = getOrchestrations();
 
         score = generateScore(newSticking, { orchestrations: orchestrations });
         if (score.length < 16) {
