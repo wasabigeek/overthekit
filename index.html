@@ -10,7 +10,7 @@
 <body>
   <label for="sticking">
     Sticking:
-    <input id="sticking" value="RLKRLKRLKRLKRLRL">
+    <input id="sticking" value="RLKRLKRLKRLKRLRL" maxlength="16" minlength="16">
   </label>
   <button id="change_sticking">Change</button>
   <br /><br /><br />
@@ -159,7 +159,13 @@
 
       document.getElementById('change_sticking').onclick = function() {
         var newSticking = document.getElementById('sticking').value;
+
         score = generateScore(newSticking);
+        if (score.length < 16) {
+          alert('Must have 16 notes!');
+          return;
+        }
+
         generateNotation(score);
       }
 
