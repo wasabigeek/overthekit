@@ -7,24 +7,27 @@
   <script type="text/javascript" src="js/bufferLoader.js"></script>
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
 </head>
-<body style="text-align: center; display: flex; flex-direction: column; height: 100%; justify-content: center;">
-  <h1>Over the Kit</h1>
-  <p>Quickly hear how different voicings of a sticking pattern sound at speed.</p>
-  <form id="stickingForm" style="margin-bottom: 2rem;">
-    <label for="sticking">
-      Sticking:
-      <input id="sticking" value="RLKRLKRLKRLKRLRL" maxlength="16" minlength="16">
-    </label>
-    <button type="submit">Change</button>
-  </form>
-  <div id="score" style="margin-bottom: 2rem;"></div>
-  <form id="playerForm">
-    <label for="tempo">
-      Tempo:
-      <input id="tempo" value="120" max="400" type="number">
-    </label>
-    <button type="submit">Play</button>
-  </form>
+<body style="display: flex; height: 100%; justify-content: center; align-items: center;">
+  <div style="max-width: 500px; text-align: center;">
+    <h1>Over the Kit</h1>
+    <p>Quickly hear how different voicings of a sticking pattern sound at speed.</p>
+    <p>(On a phone? Remember to turn off silent mode!)</p>
+    <form id="stickingForm" style="margin: 2rem;">
+      <label for="sticking">
+        Sticking:
+        <input id="sticking" value="RLKRLKRLKRLKRLRL" maxlength="16" minlength="16">
+      </label>
+      <button type="submit">Shuffle</button>
+    </form>
+    <div id="score" style="margin-bottom: 2rem;"></div>
+    <form id="playerForm">
+      <label for="tempo">
+        Tempo:
+        <input id="tempo" value="120" max="400" type="number">
+      </label>
+      <button type="submit">Play</button>
+    </form>
+  </div>
   <script type="text/javascript">
     window.onload = init;
     var context;
