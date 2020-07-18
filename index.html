@@ -244,15 +244,9 @@
       var tom2Instrument = new Instrument({ verticalPosition: 'd/5', sound: drumkit.tom2Sound })
       var tom3Instrument = new Instrument({ verticalPosition: 'a/4', sound: drumkit.tom3Sound })
 
-      function generateScore(sticking) {
+      function generateScore(sticking, options = {}) {
         var newScore = [];
-        var handNotes = [
-          new Note({ instrument: snareInstrument, volume: volume }),
-          new Note({ instrument: hihatInstrument, volume: volume }),
-          new Note({ instrument: tom1Instrument, volume: volume }),
-          // new Note({ instrument: tom2Instrument, volume: volume }),
-          new Note({ instrument: tom3Instrument, volume: volume }),
-        ]
+        var orchestrations = options.orchestrations || [hihatInstrument, snareInstrument, kickInstrument, tom1Instrument, tom3Instrument];
 
         for (var stick of sticking) {
           var note;
@@ -262,10 +256,11 @@
           if (stick.toUpperCase() == 'K') {
             note = new Note({ instrument: kickInstrument, volume: volume });
           } else {
-            note = handNotes[Math.round(Math.random() * (handNotes.length - 1))];
+            var instrument = orchestrations[Math.round(Math.random() * (orchestrations.length - 1))];
+            note = new Note({ instrument: instrument, volume: volume });
           }
 
-          newScore.push(new NoteGroup([note], DURATION_SIXTEENTH))
+          newScore.push(new NoteGroup([note], DURATION_SIXTEENTH));
         }
 
         return newScore;
@@ -277,8 +272,14 @@
       document.getElementById('stickingForm').onsubmit = function(e) {
         e.preventDefault();
         var newSticking = document.getElementById('sticking').value;
+        var orchestrations = [];
+        if (document.getElementById('hihatCheckbox').checked) { orchestrations.push(hihatInstrument) }
+        if (document.getElementById('snareCheckbox').checked) { orchestrations.push(snareInstrument) }
+        if (document.getElementById('hiTomCheckbox').checked) { orchestrations.push(tom1Instrument) }
+        if (document.getElementById('midTomCheckbox').checked) { orchestrations.push(tom2Instrument) }
+        if (document.getElementById('floorTomCheckbox').checked) { orchestrations.push(tom3Instrument) }
 
-        score = generateScore(newSticking);
+        score = generateScore(newSticking, { orchestrations: orchestrations });
         if (score.length < 16) {
           alert('Must have 16 notes!');
           return;
