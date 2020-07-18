@@ -1,32 +1,71 @@
 <!DOCTYPE html>
-<html lang="en" style="height: 100%">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Over the Kit</title>
   <script type="text/javascript" src="js/bufferLoader.js"></script>
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/base.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/components.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@0.2.x/dist/typography.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/utilities.min.css">
 </head>
-<body style="display: flex; height: 100%; justify-content: center; align-items: center;">
-  <div style="max-width: 500px; text-align: center;">
+<body>
+  <div class="container mx-auto prose prose-lg text-center pt-12 px-10">
     <h1>Over the Kit</h1>
-    <p>Quickly hear how different voicings of a sticking pattern sound at speed.</p>
-    <p>(On a phone? Remember to turn off silent mode!)</p>
-    <form id="stickingForm" style="margin: 2rem;">
-      <label for="sticking">
-        Sticking:
-        <input id="sticking" value="RLKRLKRLKRLKRLRL" maxlength="16" minlength="16">
-      </label>
-      <button type="submit">Shuffle</button>
-    </form>
-    <div id="score" style="margin-bottom: 2rem;"></div>
-    <form id="playerForm">
-      <label for="tempo">
-        Tempo:
-        <input id="tempo" value="120" max="400" type="number">
-      </label>
-      <button type="submit">Play</button>
-    </form>
+    <div>
+      <div>Quickly hear how different voicings of a sticking pattern sound at speed.</div>
+      <small class="md:hidden">(On a mobile device? Remember to turn off silent mode!)</small>
+    </div>
+    <div class="flex flex-col mt-6 space-y-10">
+      <form id="stickingForm" class="my-4">
+        <div class="md:flex md:items-center md:justify-center">
+          <div>
+            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="sticking">
+              Sticking:
+            </label>
+          </div>
+          <div class="md:mr-4 mb-4 md:mb-auto">
+            <input
+              id="sticking"
+              value="RLKRLKRLKRLKRLRL"
+              maxlength="16"
+              minlength="16"
+              class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+              type="text"
+            >
+          </div>
+          <button class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded w-full md:w-auto inline-flex items-center" type="submit">
+            <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path class="heroicon-ui" d="M6 18.7V21a1 1 0 0 1-2 0v-5a1 1 0 0 1 1-1h5a1 1 0 1 1 0 2H7.1A7 7 0 0 0 19 12a1 1 0 1 1 2 0 9 9 0 0 1-15 6.7zM18 5.3V3a1 1 0 0 1 2 0v5a1 1 0 0 1-1 1h-5a1 1 0 0 1 0-2h2.9A7 7 0 0 0 5 12a1 1 0 1 1-2 0 9 9 0 0 1 15-6.7z"/></svg>
+            <span>Shuffle</span>
+          </button>
+        </div>
+      </form>
+      <div id="score" class="flex justify-center"></div>
+      <form id="playerForm" class="my-4 space-y-6">
+        <div class="md:flex md:items-center md:justify-center">
+          <div>
+            <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="tempo">
+              Tempo:
+            </label>
+          </div>
+          <div class="md:mr-4 mb-4 md:mb-auto">
+            <input
+              id="tempo"
+              value="120"
+              max="400"
+              type="number"
+              class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+            >
+          </div>
+          <button class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded w-full md:w-auto inline-flex items-center" type="submit">
+            <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path class="heroicon-ui" d="M8 14.54V6a1 1 0 0 1 .76-.97l12-3A1 1 0 0 1 22 3v12a4 4 0 1 1-2-3.46V4.28l-10 2.5V18a4 4 0 1 1-2-3.46zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm12-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+            <span>Play</span>
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
   <script type="text/javascript">
     window.onload = init;
