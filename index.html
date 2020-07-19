@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Over the Kit</title>
   <script type="text/javascript" src="js/bufferLoader.js"></script>
+  <script type="text/javascript" src="js/vfdrumset.js"></script>
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/base.min.css">
   <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/components.min.css">
@@ -242,12 +243,12 @@
 
       drumkit = new DrumKit(context);
 
-      var snareInstrument = new Instrument({ verticalPosition: 'c/5', sound: drumkit.snareSound })
-      var hihatInstrument = new Instrument({ verticalPosition: 'g/5/x2', sound: drumkit.hihatSound })
-      var kickInstrument = new Instrument({ verticalPosition: 'f/4', sound: drumkit.kickSound })
-      var tom1Instrument = new Instrument({ verticalPosition: 'e/5', sound: drumkit.tom1Sound })
-      var tom2Instrument = new Instrument({ verticalPosition: 'd/5', sound: drumkit.tom2Sound })
-      var tom3Instrument = new Instrument({ verticalPosition: 'a/4', sound: drumkit.tom3Sound })
+      var snareInstrument = new Instrument({ verticalPosition: VexFlowDrumset.SNARE, sound: drumkit.snareSound })
+      var hihatInstrument = new Instrument({ verticalPosition: VexFlowDrumset.CLOSED_HIHAT, sound: drumkit.hihatSound })
+      var kickInstrument = new Instrument({ verticalPosition: VexFlowDrumset.KICK, sound: drumkit.kickSound })
+      var tom1Instrument = new Instrument({ verticalPosition: VexFlowDrumset.HI_TOM, sound: drumkit.tom1Sound })
+      var tom2Instrument = new Instrument({ verticalPosition: VexFlowDrumset.MID_TOM, sound: drumkit.tom2Sound })
+      var tom3Instrument = new Instrument({ verticalPosition: VexFlowDrumset.FLOOR_TOM, sound: drumkit.tom3Sound })
       function getOrchestrations() {
         var orchestrations = [];
         // this is coupled to the UI / instruments for simplicity, might want to relook this
