@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Over the Kit</title>
   <script type="text/javascript" src="js/bufferLoader.js"></script>
+  <script type="text/javascript" src="js/drumsetAudioBuffers.js"></script>
   <script type="text/javascript" src="js/vfdrumset.js"></script>
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/base.min.css">
@@ -249,35 +250,6 @@
         var tempo = document.getElementById('tempo').value;
         RhythmSample.play(score, tempo)
       }
-    }
-
-    function DrumsetAudioBuffers(audioContext) {
-      this.loader = new BufferLoader(
-        audioContext,
-        [
-          'acoustic-kit/kick.wav',
-          'acoustic-kit/snare.wav',
-          'acoustic-kit/hihat.wav',
-          'acoustic-kit/tom1.wav',
-          'acoustic-kit/tom2.wav',
-          'acoustic-kit/tom3.wav',
-        ]
-        );
-      this.loader.load();
-
-      // functions since they are asynchronously loaded
-      kickSound = function() { return this.loader.bufferList[0] };
-      snareSound = function() { return this.loader.bufferList[1] };
-      hihatSound = function() { return this.loader.bufferList[2] };
-      tom1Sound = function() { return this.loader.bufferList[3] };
-      tom2Sound = function() { return this.loader.bufferList[4] };
-      tom3Sound = function() { return this.loader.bufferList[5] };
-      this.kickSound = kickSound.bind(this);
-      this.snareSound = snareSound.bind(this);
-      this.hihatSound = hihatSound.bind(this);
-      this.tom1Sound = tom1Sound.bind(this);
-      this.tom2Sound = tom2Sound.bind(this);
-      this.tom3Sound = tom3Sound.bind(this);
     }
 
     var RhythmSample = {
