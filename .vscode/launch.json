@@ -5,12 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "edge",
+      "name": "Serve and Debug",
+      "type": "python",
       "request": "launch",
-      "version": "canary",
-      "name": "Launch Edge against localhost",
-      "url": "http://localhost:8080",
-      "webRoot": "${workspaceFolder}"
+      "module": "http.server",
+      "serverReadyAction": {
+        "action": "debugWithChrome",
+        "pattern": "port ([0-9]+)",
+        "uriFormat": "http://localhost:%s"
+      }
     }
   ]
 }
