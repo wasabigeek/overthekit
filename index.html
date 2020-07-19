@@ -175,57 +175,6 @@
     function NoteGroup(notes, duration) {
       this.notes = notes;
       this.duration = duration;
-
-    }
-
-    function toNotation(noteGroup) {
-      var keys = noteGroup.notes.map(function(note) { return note.verticalPosition });
-
-      var vfDuration;
-      switch (noteGroup.duration) {
-        case DURATION_EIGHTH:
-          vfDuration = '8';
-          break;
-        case DURATION_SIXTEENTH:
-          vfDuration = '16';
-          break;
-        default:
-          break;
-      }
-
-      return {
-        keys: keys,
-        duration: vfDuration
-      }
-    }
-
-    function createMeasure(setup) {
-      var stave = vf.Stave().addClef('percussion');
-
-      if (score.length > 0) {
-        setup(vf);
-
-        vf.Formatter()
-              .joinVoices(vf.getVoices())
-              .formatToStave(vf.getVoices(), stave);
-      }
-
-      vf.draw();
-    }
-
-    function generateNotation(score) {
-      var context = vf.getContext()
-      context.clear();
-
-      createMeasure(function(vf) {
-        var voice0 = vf.Voice().addTickables(
-          score.map(function(noteGroup) {
-            return vf.StaveNote(toNotation(noteGroup));
-          })
-        );
-
-        vf.Beam({ notes: voice0.getTickables() });
-      });
     }
 
     // score (bars, play marker?, )
