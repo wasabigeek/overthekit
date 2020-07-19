@@ -143,8 +143,8 @@
   </div>
   <script type="text/javascript">
     window.onload = init;
-    var context;
-    var drumkit;
+    var audioContext;
+    var drumset;
     var score = [];
     var VF = Vex.Flow;
     var vf = new VF.Factory({
@@ -155,11 +155,6 @@
         height: 120,
       },
     });
-
-    function Instrument(options) {
-      this.verticalPosition = options.verticalPosition;
-      this.sound = options.sound;
-    }
 
     function Note(options) {
       this.instrument = options.instrument;
@@ -177,35 +172,31 @@
       this.duration = duration;
     }
 
-    // score (bars, play marker?, )
-    // bar (notes by positions?)
-    // note (duration, volume, instrument (voice + chart position))
-    // rendering
-    // player
-
-    // flams/drags? rolls? ghost notes (maybe that's an instrument? since it has a voice attached to it)?
+    function Drumset(audioBuffers, vfDrumset) {
+      this.snare = { verticalPosition: VexFlowDrumset.SNARE, sound: audioBuffers.snareSound };
+      this.hihat = { verticalPosition: VexFlowDrumset.CLOSED_HIHAT, sound: audioBuffers.hihatSound };
+      this.kick = { verticalPosition: VexFlowDrumset.KICK, sound: audioBuffers.kickSound };
+      this.tom1 = { verticalPosition: VexFlowDrumset.HI_TOM, sound: audioBuffers.tom1Sound };
+      this.tom2 = { verticalPosition: VexFlowDrumset.MID_TOM, sound: audioBuffers.tom2Sound };
+      this.tom3 = { verticalPosition: VexFlowDrumset.FLOOR_TOM, sound: audioBuffers.tom3Sound };
+    }
 
     function init() {
       // Fix up prefixing
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
-      context = new AudioContext();
+      audioContext = new AudioContext();
 
-      drumkit = new DrumKit(context);
+      var drumsetAudioBuffers = new DrumsetAudioBuffers(audioContext);
+      drumset = new Drumset(drumsetAudioBuffers, VexFlowDrumset);
 
-      var snareInstrument = new Instrument({ verticalPosition: VexFlowDrumset.SNARE, sound: drumkit.snareSound })
-      var hihatInstrument = new Instrument({ verticalPosition: VexFlowDrumset.CLOSED_HIHAT, sound: drumkit.hihatSound })
-      var kickInstrument = new Instrument({ verticalPosition: VexFlowDrumset.KICK, sound: drumkit.kickSound })
-      var tom1Instrument = new Instrument({ verticalPosition: VexFlowDrumset.HI_TOM, sound: drumkit.tom1Sound })
-      var tom2Instrument = new Instrument({ verticalPosition: VexFlowDrumset.MID_TOM, sound: drumkit.tom2Sound })
-      var tom3Instrument = new Instrument({ verticalPosition: VexFlowDrumset.FLOOR_TOM, sound: drumkit.tom3Sound })
       function getOrchestrations() {
         var orchestrations = [];
         // this is coupled to the UI / instruments for simplicity, might want to relook this
-        if (document.getElementById('hihatCheckbox').checked) { orchestrations.push(hihatInstrument) }
-        if (document.getElementById('snareCheckbox').checked) { orchestrations.push(snareInstrument) }
-        if (document.getElementById('hiTomCheckbox').checked) { orchestrations.push(tom1Instrument) }
-        if (document.getElementById('midTomCheckbox').checked) { orchestrations.push(tom2Instrument) }
-        if (document.getElementById('floorTomCheckbox').checked) { orchestrations.push(tom3Instrument) }
+        if (document.getElementById('hihatCheckbox').checked) { orchestrations.push(drumset.hihat) }
+        if (document.getElementById('snareCheckbox').checked) { orchestrations.push(drumset.snare) }
+        if (document.getElementById('hiTomCheckbox').checked) { orchestrations.push(drumset.tom1) }
+        if (document.getElementById('midTomCheckbox').checked) { orchestrations.push(drumset.tom2) }
+        if (document.getElementById('floorTomCheckbox').checked) { orchestrations.push(drumset.tom3) }
 
         return orchestrations;
       }
@@ -220,7 +211,7 @@
           var volume = 1 - Math.random() * 0.2;
 
           if (stick.toUpperCase() == 'K') {
-            note = new Note({ instrument: kickInstrument, volume: volume });
+            note = new Note({ instrument: drumset.kick, volume: volume });
           } else {
             var instrument = orchestrations[Math.round(Math.random() * (orchestrations.length - 1))];
             note = new Note({ instrument: instrument, volume: volume });
@@ -240,7 +231,7 @@
           alert('No orchestration generated yet! Please Shuffle & Play first.')
         }
         var tempo = document.getElementById('tempo').value;
-        RhythmSample.play(drumkit, score, tempo);
+        RhythmSample.play(score, tempo);
       }
 
       document.getElementById('playerForm').onsubmit = function(e) {
@@ -256,11 +247,11 @@
 
         generateNotation(score);
         var tempo = document.getElementById('tempo').value;
-        RhythmSample.play(drumkit, score, tempo)
+        RhythmSample.play(score, tempo)
       }
     }
 
-    function DrumKit(audioContext) {
+    function DrumsetAudioBuffers(audioContext) {
       this.loader = new BufferLoader(
         audioContext,
         [
@@ -305,17 +296,17 @@
       }
     }
 
-    RhythmSample.play = function(drumkit, score, tempo) {
+    RhythmSample.play = function(score, tempo) {
       function playSound(buffer, time, volume = 1) {
 
-        var source = context.createBufferSource();
+        var source = audioContext.createBufferSource();
         source.buffer = buffer;
 
-        var gainNode = context.createGain();
+        var gainNode = audioContext.createGain();
         gainNode.gain.setValueAtTime(volume, time);
         source.connect(gainNode);
 
-        gainNode.connect(context.destination);
+        gainNode.connect(audioContext.destination);
 
         if (!source.start) {
           source.start = source.noteOn;
@@ -324,7 +315,7 @@
       }
 
       // We'll start playing the rhythm 100 milliseconds from "now"
-      var startTime = context.currentTime + 0.100;
+      var startTime = audioContext.currentTime + 0.100;
 
       var cumulativeTime = startTime;
       var plays = score.forEach(function(noteGroup) {
