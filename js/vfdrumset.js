@@ -1,6 +1,6 @@
 var VexFlowDrumset = {
   SNARE: 'c/5',
-  CLOSED_HIHAT: 'g/5/x',
+  CLOSED_HIHAT: 'g/5/x2',
   KICK: 'f/4',
   HI_TOM: 'e/5',
   MID_TOM: 'd/5',
