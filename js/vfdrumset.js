@@ -29,7 +29,9 @@ function toNotation(noteGroup) {
 }
 
 function createMeasure(setup, score) {
-  var stave = vf.Stave().addClef('percussion');
+  var stave = vf.Stave()
+    .addClef('percussion')
+    .addTimeSignature('4/4');
 
   if (score.length > 0) {
     setup(vf);
