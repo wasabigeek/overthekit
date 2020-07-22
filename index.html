@@ -170,6 +170,8 @@
   <script type="text/javascript">
     window.onload = init;
     var audioContext;
+    // the array of buffers that are currently playing
+    var currentAudio = [];
     var drumset;
     var score = [];
     var VF = Vex.Flow;
@@ -372,7 +374,15 @@
           source.start = source.noteOn;
         }
         source.start(time);
+
+        return source;
       }
+
+      // stop currentAudio
+      for (var audio of currentAudio) {
+        audio.stop();
+      }
+      currentAudio = [];
 
       // We'll start playing the rhythm 100 milliseconds from "now"
       var startTime = audioContext.currentTime + 0.100;
@@ -381,7 +391,8 @@
       var plays = score.forEach(function(noteGroup) {
         var time = timeInTempo(noteGroup.duration, tempo);
         noteGroup.notes.forEach(function(note) {
-          playSound(note.getSound(), cumulativeTime, note.volume);
+          sound = playSound(note.getSound(), cumulativeTime, note.volume);
+          currentAudio.push(sound);
         });
         cumulativeTime += time;
       });
