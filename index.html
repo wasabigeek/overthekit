@@ -310,13 +310,15 @@
         return newScore;
       }
 
-
+      var newSticking = document.getElementById('sticking').value;
+      var orchestrations = getOrchestrations();
+      score = generateScore(newSticking, { orchestrations: orchestrations });
       generateNotation(score);
 
       // events
       document.getElementById('playBtn').onclick = function(e) {
         if (score.length <= 0) {
-          alert('No orchestration generated yet! Please Shuffle & Play first.');
+          alert('No orchestration generated yet! Please click Generate first.');
           return;
         }
         var tempo = document.getElementById('tempo').value;
