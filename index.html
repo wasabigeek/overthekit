@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Over the Kit</title>
+  <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
   <script type="text/javascript" src="js/bufferLoader.js"></script>
   <script type="text/javascript" src="js/drumsetAudioBuffers.js"></script>
-  <script type="text/javascript" src="js/vfdrumset.js"></script>
-  <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
+  <script type="text/javascript" src="js/Notator.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/base.min.css">
   <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/components.min.css">
   <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@0.2.x/dist/typography.min.css">
@@ -178,15 +178,6 @@
     var currentAudio = [];
     var drumset;
     var score = [];
-    var VF = Vex.Flow;
-    var vf = new VF.Factory({
-      renderer: {
-        elementId: "score",
-        backend: VF.Renderer.Backends.SVG,
-        width: 500,
-        height: 120,
-      },
-    });
 
     function Note(options) {
       this.instrument = options.instrument;
@@ -204,13 +195,15 @@
       this.duration = duration;
     }
 
-    function Drumset(audioBuffers, vfDrumset) {
-      this.snare = { verticalPosition: VexFlowDrumset.SNARE, sound: audioBuffers.snareSound };
-      this.hihat = { verticalPosition: VexFlowDrumset.CLOSED_HIHAT, sound: audioBuffers.hihatSound };
-      this.kick = { verticalPosition: VexFlowDrumset.KICK, sound: audioBuffers.kickSound };
-      this.tom1 = { verticalPosition: VexFlowDrumset.HI_TOM, sound: audioBuffers.tom1Sound };
-      this.tom2 = { verticalPosition: VexFlowDrumset.MID_TOM, sound: audioBuffers.tom2Sound };
-      this.tom3 = { verticalPosition: VexFlowDrumset.FLOOR_TOM, sound: audioBuffers.tom3Sound };
+    function Drumset(audioBuffers, notator) {
+      var positions = notator.POSITIONS;
+
+      this.snare = { verticalPosition: positions.SNARE, sound: audioBuffers.snareSound };
+      this.hihat = { verticalPosition: positions.CLOSED_HIHAT, sound: audioBuffers.hihatSound };
+      this.kick = { verticalPosition: positions.KICK, sound: audioBuffers.kickSound };
+      this.tom1 = { verticalPosition: positions.HI_TOM, sound: audioBuffers.tom1Sound };
+      this.tom2 = { verticalPosition: positions.MID_TOM, sound: audioBuffers.tom2Sound };
+      this.tom3 = { verticalPosition: positions.FLOOR_TOM, sound: audioBuffers.tom3Sound };
     }
 
     function generateGroove(drumset) {
@@ -273,12 +266,16 @@
     }
 
     function init() {
-      // Fix up prefixing
+      // Audio setup
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
       audioContext = new AudioContext();
 
       var drumsetAudioBuffers = new DrumsetAudioBuffers(audioContext);
-      drumset = new Drumset(drumsetAudioBuffers, VexFlowDrumset);
+
+      // Notation setup
+      notator = new Notator({ elementId: 'score' });
+
+      drumset = new Drumset(drumsetAudioBuffers, notator);
 
       function getOrchestrations() {
         var orchestrations = [];
@@ -317,7 +314,7 @@
       var newSticking = document.getElementById('sticking').value;
       var orchestrations = getOrchestrations();
       score = generateScore(newSticking, { orchestrations: orchestrations });
-      generateNotation(score);
+      notator.generateNotation(score);
 
       // events
       document.getElementById('playBtn').onclick = function(e) {
@@ -344,7 +341,7 @@
           return;
         }
 
-        generateNotation(score);
+        notator.generateNotation(score);
       }
     }
 
