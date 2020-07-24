@@ -192,6 +192,10 @@
     function NoteGroup(notes, duration) {
       this.notes = notes;
       this.duration = duration;
+
+      this.setDuration = function(duration) {
+        this.duration = duration;
+      }
     }
 
     function Drumset(audioBuffers, notator) {
@@ -294,7 +298,9 @@
             note = new Note({ instrument: instrument, volume: volume });
           }
 
-          newScore.push(new NoteGroup([note], DURATION_SIXTEENTH));
+          var grouping = new NoteGroup([note]);
+          grouping.setDuration(DURATION_SIXTEENTH);
+          newScore.push(grouping);
         }
 
         return newScore;
