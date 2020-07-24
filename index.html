@@ -266,7 +266,8 @@
       var drumsetAudioBuffers = new DrumsetAudioBuffers(audioContext);
 
       // Notation setup
-      notator = new Notator({ elementId: 'score' });
+      var notator = new Notator({ elementId: 'score' });
+      var player = new Player({ audioContext: audioContext })
 
       drumset = new Drumset(drumsetAudioBuffers, notator);
 
@@ -322,8 +323,7 @@
         if (document.getElementById('withGrooveCheckbox').checked) {
           groove = generateGroove(drumset);
         };
-        new Player({ audioContext: audioContext })
-          .play(score, { groove: groove, tempo: tempo })
+        player.play(score, { groove: groove, tempo: tempo })
       }
 
       document.getElementById('shuffleForm').onsubmit = function(e) {
