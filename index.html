@@ -7,6 +7,7 @@
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
   <script type="text/javascript" src="js/bufferLoader.js"></script>
   <script type="text/javascript" src="js/drumsetAudioBuffers.js"></script>
+  <script type="text/javascript" src="js/Displacer.js"></script>
   <script type="text/javascript" src="js/Orchestrator.js"></script>
   <script type="text/javascript" src="js/Player.js"></script>
   <script type="text/javascript" src="js/Notator.js"></script>
@@ -208,55 +209,6 @@
       this.tom3 = { verticalPosition: positions.FLOOR_TOM, sound: audioBuffers.tom3Sound };
     }
 
-    function generateGroove(drumset) {
-      return [
-        new NoteGroup(
-          [
-            new Note({ instrument: drumset.hihat, volume: 1 }),
-            new Note({ instrument: drumset.kick, volume: 1 })
-          ],
-          DURATION_EIGHTH
-        ),
-        new NoteGroup(
-          [new Note({ instrument: drumset.hihat, volume: 1 })],
-          DURATION_EIGHTH
-        ),
-        new NoteGroup(
-          [
-            new Note({ instrument: drumset.hihat, volume: 1 }),
-            new Note({ instrument: drumset.snare, volume: 1 })
-          ],
-          DURATION_EIGHTH
-        ),
-        new NoteGroup(
-          [new Note({ instrument: drumset.hihat, volume: 1 })],
-          DURATION_EIGHTH
-        ),
-        new NoteGroup(
-          [
-            new Note({ instrument: drumset.hihat, volume: 1 }),
-            new Note({ instrument: drumset.kick, volume: 1 })
-          ],
-          DURATION_EIGHTH
-        ),
-        new NoteGroup(
-          [new Note({ instrument: drumset.hihat, volume: 1 })],
-          DURATION_EIGHTH
-        ),
-        new NoteGroup(
-          [
-            new Note({ instrument: drumset.hihat, volume: 1 }),
-            new Note({ instrument: drumset.snare, volume: 1 })
-          ],
-          DURATION_EIGHTH
-        ),
-        new NoteGroup(
-          [new Note({ instrument: drumset.hihat, volume: 1 })],
-          DURATION_EIGHTH
-        ),
-      ]
-    }
-
     function init() {
       // Audio setup
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -306,10 +258,10 @@
         }
         var tempo = document.getElementById('tempo').value;
         var groove = null;
-        if (document.getElementById('withGrooveCheckbox').checked) {
-          groove = generateGroove(drumset);
-        };
-        player.play(score, { groove: groove, tempo: tempo })
+
+        score = new Displacer({ drumset: drumset })
+          .displace(score, { withGroove: document.getElementById('withGrooveCheckbox').checked });
+        player.play(score, { tempo: tempo })
       }
 
       document.getElementById('shuffleForm').onsubmit = function(e) {

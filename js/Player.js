@@ -29,11 +29,6 @@ function Player(options) {
   this.play = function(score, options) {
     this.tempo = options.tempo || 120;
 
-    var playbackScore = score;
-    if (options.groove) {
-      playbackScore = options.groove.concat(playbackScore)
-    }
-
     // stop currentAudio
     for (var audio of this.currentAudio) {
       audio.stop();
@@ -42,7 +37,7 @@ function Player(options) {
 
     // We'll start playing the rhythm 100 milliseconds from "now"
     var startTime = this.audioContext.currentTime + 0.100;
-    playbackScore.reduce(this.schedule, startTime);
+    score.reduce(this.schedule, startTime);
   }
 
   this.playSound = function(buffer, time, volume = 1) {
