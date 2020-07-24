@@ -7,6 +7,7 @@
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
   <script type="text/javascript" src="js/bufferLoader.js"></script>
   <script type="text/javascript" src="js/drumsetAudioBuffers.js"></script>
+  <script type="text/javascript" src="js/Orchestrator.js"></script>
   <script type="text/javascript" src="js/Player.js"></script>
   <script type="text/javascript" src="js/Notator.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/base.min.css">
@@ -198,9 +199,7 @@
       }
     }
 
-    function Drumset(audioBuffers, notator) {
-      var positions = notator.POSITIONS;
-
+    function Drumset(audioBuffers, positions) {
       this.snare = { verticalPosition: positions.SNARE, sound: audioBuffers.snareSound };
       this.hihat = { verticalPosition: positions.CLOSED_HIHAT, sound: audioBuffers.hihatSound };
       this.kick = { verticalPosition: positions.KICK, sound: audioBuffers.kickSound };
@@ -269,7 +268,7 @@
       var notator = new Notator({ elementId: 'score' });
       var player = new Player({ audioContext: audioContext })
 
-      drumset = new Drumset(drumsetAudioBuffers, notator);
+      drumset = new Drumset(drumsetAudioBuffers, notator.POSITIONS);
 
       function getOrchestrations() {
         var orchestrations = [];
@@ -284,32 +283,19 @@
       }
 
       function generateScore(sticking, options = {}) {
-        var newScore = [];
         var orchestrations = options.orchestrations || getOrchestrations();
 
-        for (var stick of sticking) {
-          var note;
-          // attempt to make it sound slightly more organic with volume variations
-          var volume = 1 - Math.random() * 0.2;
+        var newScore = new Orchestrator({ drumset: drumset, allowedOrchestrations: orchestrations })
+          .orchestrate(sticking);
 
-          if (stick.toUpperCase() == 'K') {
-            note = new Note({ instrument: drumset.kick, volume: volume });
-          } else {
-            var instrument = orchestrations[Math.round(Math.random() * (orchestrations.length - 1))];
-            note = new Note({ instrument: instrument, volume: volume });
-          }
-
-          var grouping = new NoteGroup([note]);
+        return newScore.map(function(grouping) {
           grouping.setDuration(DURATION_SIXTEENTH);
-          newScore.push(grouping);
-        }
-
-        return newScore;
+          return grouping;
+        });
       }
 
       var newSticking = document.getElementById('sticking').value;
-      var orchestrations = getOrchestrations();
-      score = generateScore(newSticking, { orchestrations: orchestrations });
+      score = generateScore(newSticking);
       notator.generateNotation(score);
 
       // events
@@ -329,9 +315,7 @@
       document.getElementById('shuffleForm').onsubmit = function(e) {
         e.preventDefault();
         var newSticking = document.getElementById('sticking').value;
-        var orchestrations = getOrchestrations();
-
-        score = generateScore(newSticking, { orchestrations: orchestrations });
+        score = generateScore(newSticking);
         if (score.length < 16) {
           alert('Must have 16 notes!');
           return;
