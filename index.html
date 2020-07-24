@@ -259,9 +259,9 @@
         var tempo = document.getElementById('tempo').value;
         var groove = null;
 
-        score = new Displacer({ drumset: drumset })
+        var playbackScore = new Displacer({ drumset: drumset })
           .displace(score, { withGroove: document.getElementById('withGrooveCheckbox').checked });
-        player.play(score, { tempo: tempo })
+        player.play(playbackScore, { tempo: tempo })
       }
 
       document.getElementById('shuffleForm').onsubmit = function(e) {
