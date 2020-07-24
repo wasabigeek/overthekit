@@ -7,6 +7,7 @@
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
   <script type="text/javascript" src="js/bufferLoader.js"></script>
   <script type="text/javascript" src="js/drumsetAudioBuffers.js"></script>
+  <script type="text/javascript" src="js/Player.js"></script>
   <script type="text/javascript" src="js/Notator.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/base.min.css">
   <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.5/dist/components.min.css">
@@ -174,8 +175,6 @@
   <script type="text/javascript">
     window.onload = init;
     var audioContext;
-    // the array of buffers that are currently playing
-    var currentAudio = [];
     var drumset;
     var score = [];
 
@@ -255,16 +254,6 @@
       ]
     }
 
-    function playScore(score, options) {
-      var playbackScore = score;
-      var tempo = options.tempo || 120;
-      if (options.groove) {
-        playbackScore = options.groove.concat(playbackScore)
-      }
-
-      RhythmSample.play(playbackScore, tempo);
-    }
-
     function init() {
       // Audio setup
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -327,7 +316,8 @@
         if (document.getElementById('withGrooveCheckbox').checked) {
           groove = generateGroove(drumset);
         };
-        playScore(score, { groove: groove, tempo: tempo })
+        new Player({ audioContext: audioContext })
+          .play(score, { groove: groove, tempo: tempo })
       }
 
       document.getElementById('shuffleForm').onsubmit = function(e) {
@@ -344,62 +334,6 @@
         notator.generateNotation(score);
       }
     }
-
-    var RhythmSample = {
-    };
-
-    function timeInTempo(duration, tempo) {
-      switch (duration) {
-        case DURATION_EIGHTH:
-          return (60 / tempo) / 2;
-          break;
-        case DURATION_SIXTEENTH:
-          return (60 / tempo) / 4;
-          break;
-        default:
-          break;
-      }
-    }
-
-    RhythmSample.play = function(score, tempo) {
-      function playSound(buffer, time, volume = 1) {
-
-        var source = audioContext.createBufferSource();
-        source.buffer = buffer;
-
-        var gainNode = audioContext.createGain();
-        gainNode.gain.setValueAtTime(volume, time);
-        source.connect(gainNode);
-
-        gainNode.connect(audioContext.destination);
-
-        if (!source.start) {
-          source.start = source.noteOn;
-        }
-        source.start(time);
-
-        return source;
-      }
-
-      // stop currentAudio
-      for (var audio of currentAudio) {
-        audio.stop();
-      }
-      currentAudio = [];
-
-      // We'll start playing the rhythm 100 milliseconds from "now"
-      var startTime = audioContext.currentTime + 0.100;
-
-      var cumulativeTime = startTime;
-      var plays = score.forEach(function(noteGroup) {
-        var time = timeInTempo(noteGroup.duration, tempo);
-        noteGroup.notes.forEach(function(note) {
-          sound = playSound(note.getSound(), cumulativeTime, note.volume);
-          currentAudio.push(sound);
-        });
-        cumulativeTime += time;
-      });
-    };
   </script>
 </body>
 </html>
