@@ -53,8 +53,12 @@ function Displacer(options) {
   this.displace = function(score, options) {
     var newScore = score;
 
-    if (options.withGroove) {
-      newScore = this.generateGroove().concat(score);
+    if (options.counts) {
+      var groove = this.generateGroove();
+      var prefix = groove.slice(0, options.counts);
+      var suffix = groove.slice(options.counts);
+
+      newScore = prefix.concat(newScore, suffix)
     }
 
     return newScore;
