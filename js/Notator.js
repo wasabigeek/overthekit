@@ -4,7 +4,7 @@ function Notator(options) {
       elementId: options.elementId,
       backend: Vex.Flow.Renderer.Backends.SVG,
       width: 500,
-      height: 120,
+      height: 300,
     },
   });
 
@@ -17,9 +17,7 @@ function Notator(options) {
     FLOOR_TOM: 'a/4',
   }
 
-  this.toNotation = function(noteGroup) {
-    var keys = noteGroup.notes.map(function(note) { return note.verticalPosition });
-
+  this.toDuration = function(noteGroup) {
     var vfDuration;
     switch (noteGroup.duration) {
       case DURATION_EIGHTH:
@@ -32,34 +30,55 @@ function Notator(options) {
         break;
     }
 
+    return vfDuration;
+  }
+
+  this.toNotation = function(noteGroup) {
+    var keys = noteGroup.notes.map(function(note) { return note.verticalPosition });
+
     return {
       keys: keys,
-      duration: vfDuration
+      duration: this.toDuration(noteGroup)
     }
   }
 
+  this.addStave = function(subScore, staveOptions = {}) {
+    var stave = this.vf.Stave(staveOptions)
+      .addClef('percussion')
+      .addTimeSignature('4/4');
+
+    var tickables = [];
+    for (var noteGroup of subScore) {
+      tickables.push(this.vf.StaveNote(this.toNotation(noteGroup)));
+    }
+
+    var voice0 = this.vf.Voice().addTickables(tickables);
+    this.vf.Beam({ notes: voice0.getTickables() });
+
+    this.vf.Formatter()
+      .joinVoices(this.vf.getVoices())
+      .formatToStave(this.vf.getVoices(), stave);
+
+    return stave;
+  }
 
   this.generateNotation = function(score) {
     var context = this.vf.getContext()
     context.clear();
 
-    var stave = this.vf.Stave()
-    .addClef('percussion')
-    .addTimeSignature('4/4');
+    var totalSixteenths = 0;
+    var subScore1 = [];
+    var subScore2 = score.slice();
+    do {
+      var noteGroup = subScore2.shift();
+      totalSixteenths += 1 / this.toDuration(noteGroup) * 16
 
-    if (score.length > 0) {
-      var tickables = [];
-      for (var noteGroup of score) {
-        tickables.push(this.vf.StaveNote(this.toNotation(noteGroup)));
-      }
+      subScore1.push(noteGroup)
+    } while (totalSixteenths < 16)
 
-      var voice0 = this.vf.Voice().addTickables(tickables);
-      this.vf.Beam({ notes: voice0.getTickables() });
+    this.addStave(subScore1, { y: 30} );
+    this.addStave(subScore2, { y: 180 });
 
-      this.vf.Formatter()
-        .joinVoices(this.vf.getVoices())
-        .formatToStave(this.vf.getVoices(), stave);
-    }
     this.vf.draw();
   }
 }

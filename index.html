@@ -244,10 +244,18 @@
         var newScore = new Orchestrator({ drumset: drumset, allowedOrchestrations: orchestrations })
           .orchestrate(sticking);
 
-        return newScore.map(function(grouping) {
+        newScore = newScore.map(function(grouping) {
           grouping.setDuration(DURATION_SIXTEENTH);
           return grouping;
         });
+
+        newScore = new Displacer({ drumset: drumset })
+          .displace(
+            newScore,
+            { counts: document.getElementById('displacement').value }
+          );
+
+        return newScore;
       }
 
       var newSticking = document.getElementById('sticking').value;
@@ -263,12 +271,7 @@
         var tempo = document.getElementById('tempo').value;
         var groove = null;
 
-        var playbackScore = new Displacer({ drumset: drumset })
-          .displace(
-            score,
-            { counts: document.getElementById('displacement').value }
-          );
-        player.play(playbackScore, { tempo: tempo })
+        player.play(score, { tempo: tempo })
       }
 
       document.getElementById('shuffleForm').onsubmit = function(e) {
