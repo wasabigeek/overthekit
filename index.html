@@ -192,9 +192,9 @@
       // this has to be lazily retrieved now because the AudioContext needs to load
       this.getSound = this.instrument.sound;
     }
-    DURATION_SIXTEENTH = 'sixteenth';
-    DURATION_EIGHTH = 'eighth';
-    DURATION_QUARTER = 'quarter';
+    DURATION_SIXTEENTH = 1/16;
+    DURATION_EIGHTH = 1/8;
+    DURATION_QUARTER = 1/4;
     function NoteGroup(notes, duration) {
       this.notes = notes;
       this.duration = duration;

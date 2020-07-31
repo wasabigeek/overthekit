@@ -18,19 +18,7 @@ function Notator(options) {
   }
 
   this.toDuration = function(noteGroup) {
-    var vfDuration;
-    switch (noteGroup.duration) {
-      case DURATION_EIGHTH:
-        vfDuration = '8';
-        break;
-      case DURATION_SIXTEENTH:
-        vfDuration = '16';
-        break;
-      default:
-        break;
-    }
-
-    return vfDuration;
+    return String(1 / noteGroup.duration);
   }
 
   this.toNotation = function(noteGroup) {

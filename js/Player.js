@@ -4,16 +4,7 @@ function Player(options) {
   this.currentAudio = [];
 
   this.timeInTempo = function(duration, tempo) {
-    switch (duration) {
-      case DURATION_EIGHTH:
-        return (60 / tempo) / 2;
-        break;
-      case DURATION_SIXTEENTH:
-        return (60 / tempo) / 4;
-        break;
-      default:
-        break;
-    }
+    return duration * (60 * 4 / tempo)
   }
 
   function schedule(cumulativeTime, noteGroup) {
