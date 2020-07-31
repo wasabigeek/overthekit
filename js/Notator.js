@@ -1,20 +1,26 @@
+NOTATOR_POSITIONS = {
+  SNARE: 'c/5',
+  CLOSED_HIHAT: 'g/5/x2',
+  KICK: 'f/4',
+  HI_TOM: 'e/5',
+  MID_TOM: 'd/5',
+  FLOOR_TOM: 'a/4',
+}
+
 function Notator(options) {
   this.vf = new Vex.Flow.Factory({
     renderer: {
       elementId: options.elementId,
       backend: Vex.Flow.Renderer.Backends.SVG,
-      width: 500,
-      height: 300,
+      width: options.width || 500,
+      height: options.height || 150,
     },
   });
 
-  this.POSITIONS = {
-    SNARE: 'c/5',
-    CLOSED_HIHAT: 'g/5/x2',
-    KICK: 'f/4',
-    HI_TOM: 'e/5',
-    MID_TOM: 'd/5',
-    FLOOR_TOM: 'a/4',
+  /** Used to order the notes https://github.com/0xfe/vexflow/issues/104 */
+  this.getPitchValue = function(note) {
+    parts = note.split("/");
+    return Vex.Flow.keyProperties.note_values[parts[0].toUpperCase()].int_val + (parseInt(parts[1]) * 12);
   }
 
   this.toDuration = function(noteGroup) {
@@ -22,7 +28,9 @@ function Notator(options) {
   }
 
   this.toNotation = function(noteGroup) {
-    var keys = noteGroup.notes.map(function(note) { return note.verticalPosition });
+    var keys = noteGroup.notes
+      .map(function(note) { return note.verticalPosition })
+      .sort((a, b) => this.getPitchValue(a) - this.getPitchValue(b));
 
     return {
       keys: keys,
@@ -36,12 +44,17 @@ function Notator(options) {
       .addTimeSignature('4/4');
 
     var tickables = [];
-    for (var noteGroup of subScore) {
+    var convertToStaveNote = function(noteGroup) {
       tickables.push(this.vf.StaveNote(this.toNotation(noteGroup)));
     }
+    subScore.forEach(convertToStaveNote.bind(this));
 
     var voice0 = this.vf.Voice().addTickables(tickables);
-    this.vf.Beam({ notes: voice0.getTickables() });
+    try {
+      this.vf.Beam({ notes: voice0.getTickables() });
+    } catch(error) {
+      console.warn(error);
+    }
 
     this.vf.Formatter()
       .joinVoices(this.vf.getVoices())
@@ -54,18 +67,19 @@ function Notator(options) {
     var context = this.vf.getContext()
     context.clear();
 
-    var totalSixteenths = 0;
-    var subScore1 = [];
-    var subScore2 = score.slice();
-    do {
-      var noteGroup = subScore2.shift();
-      totalSixteenths += 1 / this.toDuration(noteGroup) * 16
+    // move this logic into a Score object
+    var scoreCopy = score.slice();
+    var scoreDuration = scoreCopy.sumDuration();
 
-      subScore1.push(noteGroup)
-    } while (totalSixteenths < 16)
+    if (scoreDuration > 1) {
+      var subScore1 = score.sliceDuration(0, 1);
+      var subScore2 = score.sliceDuration(1, 2);
 
-    this.addStave(subScore1, { y: 30} );
-    this.addStave(subScore2, { y: 180 });
+      this.addStave(subScore1, { y: 30 } );
+      this.addStave(subScore2, { y: 180 } );
+    } else {
+      this.addStave(scoreCopy, { y: 30 } );
+    }
 
     this.vf.draw();
   }

@@ -7,15 +7,20 @@ function Player(options) {
     return duration * (60 * 4 / tempo)
   }
 
-  function schedule(cumulativeTime, noteGroup) {
-    var time = this.timeInTempo(noteGroup.duration, this.tempo);
-    for (var note of noteGroup.notes) {
-      sound = this.playSound(note.getSound(), cumulativeTime, note.volume);
-      this.currentAudio.push(sound);
+  this.createSchedulingFunction = function() {
+    // We'll start playing the rhythm 100 milliseconds from "now"
+    var cumulativeTime = this.audioContext.currentTime + 0.100;
+
+    function schedule(noteGroup) {
+      var time = this.timeInTempo(noteGroup.duration, this.tempo);
+      for (var note of noteGroup.notes) {
+        sound = this.playSound(note.getSound(), cumulativeTime, note.volume);
+        this.currentAudio.push(sound);
+      }
+      cumulativeTime += time;
     }
-    return cumulativeTime + time;
+    return schedule.bind(this);
   }
-  this.schedule = schedule.bind(this);
 
   this.play = function(score, options) {
     this.tempo = options.tempo || 120;
@@ -26,9 +31,7 @@ function Player(options) {
     }
     this.currentAudio = [];
 
-    // We'll start playing the rhythm 100 milliseconds from "now"
-    var startTime = this.audioContext.currentTime + 0.100;
-    score.reduce(this.schedule, startTime);
+    score.forEach(this.createSchedulingFunction());
   }
 
   this.playSound = function(buffer, time, volume = 1) {

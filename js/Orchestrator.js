@@ -3,7 +3,7 @@ function Orchestrator(options) {
   this.allowedOrchestrations = options.allowedOrchestrations;
 
   this.orchestrate = function(sticking) {
-    var score = [];
+    var score = new Score();
 
     for (var stick of sticking) {
       var note;

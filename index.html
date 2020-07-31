@@ -7,7 +7,8 @@
   <script type="text/javascript" src="https://unpkg.com/vexflow@3.0.9/releases/vexflow-min.js"></script>
   <script type="text/javascript" src="js/bufferLoader.js"></script>
   <script type="text/javascript" src="js/drumsetAudioBuffers.js"></script>
-  <script type="text/javascript" src="js/Displacer.js"></script>
+  <script type="text/javascript" src="js/GrooveGenerator.js"></script>
+  <script type="text/javascript" src="js/StickingPadder.js"></script>
   <script type="text/javascript" src="js/Orchestrator.js"></script>
   <script type="text/javascript" src="js/Player.js"></script>
   <script type="text/javascript" src="js/Notator.js"></script>
@@ -37,7 +38,7 @@
             <div class="md:w-2/3">
               <input
                 id="sticking"
-                value="RLKRLKRLKRLKRLRL"
+                value="RLRLK"
                 maxlength="16"
                 minlength="16"
                 class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
@@ -124,25 +125,6 @@
               >
             </div>
           </div>
-          <div class="md:flex md:items-center md:justify-center">
-            <div class="md:w-1/3">
-              <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4" for="sticking">
-                Displacement:
-              </label>
-            </div>
-            <div class="md:w-2/3 mb-4 md:mb-auto">
-              <div class="flex items-center border-2  border-gray-200 rounded">
-                <input
-                  id="displacement"
-                  value="8"
-                  max="8"
-                  type="number"
-                  class="bg-gray-200 appearance-none w-1/2 py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-                >
-                <div class="w-1/2 px-4 text-gray-500">eighth notes</div>
-              </div>
-            </div>
-          </div>
           <div class="md:flex md:items-center">
             <div class="md:w-1/3 hidden md:block">&nbsp;</div>
             <div class="md:w-2/3 text-left">
@@ -150,14 +132,25 @@
                 <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path class="heroicon-ui" d="M6 18.7V21a1 1 0 0 1-2 0v-5a1 1 0 0 1 1-1h5a1 1 0 1 1 0 2H7.1A7 7 0 0 0 19 12a1 1 0 1 1 2 0 9 9 0 0 1-15 6.7zM18 5.3V3a1 1 0 0 1 2 0v5a1 1 0 0 1-1 1h-5a1 1 0 0 1 0-2h2.9A7 7 0 0 0 5 12a1 1 0 1 1-2 0 9 9 0 0 1 15-6.7z"/></svg>
                 <span>Generate</span>
               </button>
-              <button id="playBtn" class="shadow bg-purple-200 hover:bg-purple-100 focus:shadow-outline focus:outline-none text-purple-600 font-bold py-2 px-4 rounded w-full md:w-auto inline-flex items-center justify-center md:ml-2 mt-2 md:mt-auto" type="button">
-                <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path class="heroicon-ui" d="M8 14.54V6a1 1 0 0 1 .76-.97l12-3A1 1 0 0 1 22 3v12a4 4 0 1 1-2-3.46V4.28l-10 2.5V18a4 4 0 1 1-2-3.46zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm12-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
-                <span>Play</span>
-              </button>
             </div>
           </div>
         </form>
-        <div id="score" class="flex justify-center border-solid border-t border-gray-300 pt-8"></div>
+        <div class="border-solid border-t border-gray-300">
+          <h2>Fill (16th Notes)</h2>
+          <div id="fill16" class="flex justify-center mb-4"></div>
+          <button id="fill16Play" class="shadow bg-purple-200 hover:bg-purple-100 focus:shadow-outline focus:outline-none text-purple-600 font-bold py-2 px-4 rounded w-full md:w-auto inline-flex items-center justify-center md:ml-2 mt-2 md:mt-auto" type="button">
+            <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path class="heroicon-ui" d="M8 14.54V6a1 1 0 0 1 .76-.97l12-3A1 1 0 0 1 22 3v12a4 4 0 1 1-2-3.46V4.28l-10 2.5V18a4 4 0 1 1-2-3.46zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm12-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+            <span>Play</span>
+          </button>
+        </div>
+        <div class="border-solid border-t border-gray-300">
+          <h2>One Bar Fill (16th Notes)</h2>
+          <div id="1BarFill16" class="flex justify-center"></div>
+          <button id="1BarFill16Play" class="shadow bg-purple-200 hover:bg-purple-100 focus:shadow-outline focus:outline-none text-purple-600 font-bold py-2 px-4 rounded w-full md:w-auto inline-flex items-center justify-center md:ml-2 mt-2 md:mt-auto" type="button">
+            <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path class="heroicon-ui" d="M8 14.54V6a1 1 0 0 1 .76-.97l12-3A1 1 0 0 1 22 3v12a4 4 0 1 1-2-3.46V4.28l-10 2.5V18a4 4 0 1 1-2-3.46zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm12-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+            <span>Play</span>
+          </button>
+        </div>
       </div>
     </div>
     <div class="text-gray-500 px-10 md:px-16">
@@ -182,7 +175,56 @@
     window.onload = init;
     var audioContext;
     var drumset;
-    var score = [];
+    var scores = {
+      'fill16': new Score(),
+      '1BarFill16': new Score(),
+    }
+
+    function Score(noteGroups = []) {
+      this.noteGroups = noteGroups;
+
+      this.slice = function(start, end) {
+        return new Score(this.noteGroups.slice(start, end));
+      }
+
+      this.sliceDuration = function(start, end) {
+        var sliced = [];
+        var copy = this.noteGroups.slice();
+        var cumulativeDuration = 0;
+        while(cumulativeDuration < end && copy.length > 0) {
+          var next = copy.shift();
+
+          // have we reached the end?
+          if (next && (end - cumulativeDuration) >= next.duration) {
+            // is this from the start that we wanted to slice?
+            if (cumulativeDuration >= start) {
+              sliced.push(next);
+            }
+            cumulativeDuration += next.duration;
+          }
+        }
+
+        return new Score(sliced);
+      }
+
+      this.concat = function(score) {
+        return new Score(this.noteGroups.slice().concat(score.noteGroups));
+      }
+
+      this.forEach = function(fn) {
+        this.noteGroups.forEach(fn);
+      }
+
+      this.push = function(noteGroup) {
+        this.noteGroups.push(noteGroup);
+      }
+
+      this.sumDuration = function() {
+        return this.noteGroups.reduce(function(acc, noteGroup) {
+          return acc + noteGroup.duration;
+        }, 0);
+      }
+    }
 
     function Note(options) {
       this.instrument = options.instrument;
@@ -220,11 +262,17 @@
 
       var drumsetAudioBuffers = new DrumsetAudioBuffers(audioContext);
 
-      // Notation setup
-      var notator = new Notator({ elementId: 'score' });
+      var scoreGenerators = {
+        'fill16': generateScore,
+        '1BarFill16': generateScoreBar,
+      }
+      var notators = {
+        'fill16': new Notator({ elementId: 'fill16' }),
+        '1BarFill16': new Notator({ elementId: '1BarFill16', height: 300 }),
+      }
       var player = new Player({ audioContext: audioContext })
 
-      drumset = new Drumset(drumsetAudioBuffers, notator.POSITIONS);
+      drumset = new Drumset(drumsetAudioBuffers, NOTATOR_POSITIONS);
 
       function getOrchestrations() {
         var orchestrations = [];
@@ -238,52 +286,66 @@
         return orchestrations;
       }
 
+      // FIXME: refactor
       function generateScore(sticking, options = {}) {
         var orchestrations = options.orchestrations || getOrchestrations();
 
         var newScore = new Orchestrator({ drumset: drumset, allowedOrchestrations: orchestrations })
           .orchestrate(sticking);
 
-        newScore = newScore.map(function(grouping) {
+        newScore.forEach(function(grouping) {
           grouping.setDuration(DURATION_SIXTEENTH);
-          return grouping;
         });
 
-        newScore = new Displacer({ drumset: drumset })
-          .displace(
-            newScore,
-            { counts: document.getElementById('displacement').value }
-          );
+        var duration = newScore.sumDuration();
+        var groove = new GrooveGenerator({ drumset: drumset }).generate({ duration: 1 - duration });
 
-        return newScore;
+        return groove.concat(newScore);
+      }
+
+      // FIXME: refactor
+      function generateScoreBar(sticking, options = {}) {
+        var orchestrations = options.orchestrations || getOrchestrations();
+
+        var newSticking = new StickingPadder().pad(sticking);
+
+        var newScore = new Orchestrator({ drumset: drumset, allowedOrchestrations: orchestrations })
+          .orchestrate(newSticking);
+
+        newScore.forEach(function(grouping) {
+          grouping.setDuration(DURATION_SIXTEENTH);
+        });
+
+        var duration = newScore.sumDuration();
+        var groove = new GrooveGenerator({ drumset: drumset }).generate({ duration: 2 - duration });
+
+        return groove.concat(newScore);
       }
 
       var newSticking = document.getElementById('sticking').value;
-      score = generateScore(newSticking);
-      notator.generateNotation(score);
+      for (var scoreKey in scores) {
+        scores[scoreKey] = scoreGenerators[scoreKey](newSticking);
+        notators[scoreKey].generateNotation(scores[scoreKey]);
+      }
 
       // events
-      document.getElementById('playBtn').onclick = function(e) {
-        if (score.length <= 0) {
-          alert('No orchestration generated yet! Please click Generate first.');
-          return;
+      var createClickHandler = function(scoreKey) {
+        return function(e) {
+          var tempo = document.getElementById('tempo').value;
+          player.play(scores[scoreKey], { tempo: tempo })
         }
-        var tempo = document.getElementById('tempo').value;
-        var groove = null;
-
-        player.play(score, { tempo: tempo })
+      }
+      for (var scoreKey in scores) {
+        document.getElementById(scoreKey + 'Play').onclick = createClickHandler(scoreKey); // scope scoreKey to the function
       }
 
       document.getElementById('shuffleForm').onsubmit = function(e) {
         e.preventDefault();
         var newSticking = document.getElementById('sticking').value;
-        score = generateScore(newSticking);
-        if (score.length < 16) {
-          alert('Must have 16 notes!');
-          return;
+        for (var scoreKey in scores) {
+          scores[scoreKey] = scoreGenerators[scoreKey](newSticking);
+          notators[scoreKey].generateNotation(scores[scoreKey]);
         }
-
-        notator.generateNotation(score);
       }
     }
   </script>
