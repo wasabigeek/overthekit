@@ -44,18 +44,31 @@ function Notator(options) {
       .addTimeSignature(subScore.timeSignature);
 
     var tickables = [];
-    var convertToStaveNote = function(noteGroup) {
-      tickables.push(this.vf.StaveNote(this.toNotation(noteGroup)));
-    }
-    subScore.forEach(convertToStaveNote.bind(this));
+    var currentBeamGroup = [];
+    var currentBeamCounter = 0;
+    var processNoteGroup = function(noteGroup) {
+      var tickable = this.vf.StaveNote(this.toNotation(noteGroup));
+      tickables.push(tickable);
 
-    var voice0 = this.vf.Voice().addTickables(tickables);
+      if (currentBeamCounter < subScore.getBeatValue()) {
+        currentBeamGroup.push(tickable);
+        currentBeamCounter += noteGroup.duration;
+      }
 
-    try {
-      this.vf.Beam({ notes: voice0.getTickables() });
-    } catch(error) {
-      console.warn(error);
+      if (currentBeamCounter >= subScore.getBeatValue()) {
+        try {
+          this.vf.Beam({ notes: currentBeamGroup });
+        } catch(error) {
+          console.warn(error);
+        }
+
+        currentBeamGroup = [];
+        currentBeamCounter = 0;
+      }
     }
+    subScore.forEach(processNoteGroup.bind(this));
+
+    this.vf.Voice().addTickables(tickables);
 
     this.vf.Formatter()
       .joinVoices(this.vf.getVoices())
