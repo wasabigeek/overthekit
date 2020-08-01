@@ -175,16 +175,26 @@
     window.onload = init;
     var audioContext;
     var drumset;
+    DURATION_SIXTEENTH = 1/16;
+    DURATION_EIGHTH = 1/8;
+    DURATION_QUARTER = 1/4;
+
     var scores = {
       'fill16': new Score(),
       '1BarFill16': new Score(),
     }
 
-    function Score(noteGroups = []) {
+    function Score(noteGroups = [], options = {}) {
       this.noteGroups = noteGroups;
+      this.options = options;  // for copying
+      this.timeSignature = options.timeSignature || '4/4';
+
+      this.getBeatValue = function() {
+        return 1 / Number(this.timeSignature.split('/')[1]);
+      }
 
       this.slice = function(start, end) {
-        return new Score(this.noteGroups.slice(start, end));
+        return new Score(this.noteGroups.slice(start, end), this.options);
       }
 
       this.sliceDuration = function(start, end) {
@@ -204,11 +214,11 @@
           }
         }
 
-        return new Score(sliced);
+        return new Score(sliced, this.options);
       }
 
       this.concat = function(score) {
-        return new Score(this.noteGroups.slice().concat(score.noteGroups));
+        return new Score(this.noteGroups.slice().concat(score.noteGroups), this.options);
       }
 
       this.forEach = function(fn) {
@@ -234,9 +244,7 @@
       // this has to be lazily retrieved now because the AudioContext needs to load
       this.getSound = this.instrument.sound;
     }
-    DURATION_SIXTEENTH = 1/16;
-    DURATION_EIGHTH = 1/8;
-    DURATION_QUARTER = 1/4;
+
     function NoteGroup(notes, duration) {
       this.notes = notes;
       this.duration = duration;

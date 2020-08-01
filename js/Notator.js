@@ -41,7 +41,7 @@ function Notator(options) {
   this.addStave = function(subScore, staveOptions = {}) {
     var stave = this.vf.Stave(staveOptions)
       .addClef('percussion')
-      .addTimeSignature('4/4');
+      .addTimeSignature(subScore.timeSignature);
 
     var tickables = [];
     var convertToStaveNote = function(noteGroup) {
@@ -50,6 +50,7 @@ function Notator(options) {
     subScore.forEach(convertToStaveNote.bind(this));
 
     var voice0 = this.vf.Voice().addTickables(tickables);
+
     try {
       this.vf.Beam({ notes: voice0.getTickables() });
     } catch(error) {
@@ -67,7 +68,6 @@ function Notator(options) {
     var context = this.vf.getContext()
     context.clear();
 
-    // move this logic into a Score object
     var scoreCopy = score.slice();
     var scoreDuration = scoreCopy.sumDuration();
 
