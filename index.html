@@ -289,6 +289,20 @@
       this.tom3 = { verticalPosition: positions.FLOOR_TOM, sound: audioBuffers.tom3Sound };
     }
 
+    /**
+    * Determines how the sticking is interpreted.
+    */
+    function StickingContext(params = {}) {
+      this.pipeline = params.pipeline;
+
+      var generate = function(sticking, options = {}) {
+        return this.pipeline.reduce(function(output, processingFunction) {
+          return processingFunction(output);
+        }, sticking);
+      }
+      this.generate = generate.bind(this);
+    }
+
     function init() {
       // Audio setup
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -347,25 +361,17 @@
       }
       var player = new Player({ audioContext: audioContext })
 
-      /**
-       * Determines how the sticking is interpreted.
-       */
-      function StickingContext(params = {}) {
-        this.pipeline = params.pipeline;
-
-        var generate = function(sticking, options = {}) {
-          return this.pipeline.reduce(function(output, processingFunction) {
-            return processingFunction(output);
-          }, sticking);
+      function generateContexts() {
+        var newSticking = document.getElementById('sticking').value;
+        for (var scoreKey in scores) {
+          scores[scoreKey] = stickingContexts[scoreKey].generate(newSticking);
+          notators[scoreKey].generateNotation(scores[scoreKey]);
         }
-        this.generate = generate.bind(this);
       }
 
-      var newSticking = document.getElementById('sticking').value;
-      for (var scoreKey in scores) {
-        scores[scoreKey] = stickingContexts[scoreKey].generate(newSticking);
-        notators[scoreKey].generateNotation(scores[scoreKey]);
-      }
+
+      // empty state
+      generateContexts();
 
       // events
       var createClickHandler = function(scoreKey) {
@@ -380,11 +386,7 @@
 
       document.getElementById('shuffleForm').onsubmit = function(e) {
         e.preventDefault();
-        var newSticking = document.getElementById('sticking').value;
-        for (var scoreKey in scores) {
-          scores[scoreKey] = stickingContexts[scoreKey](newSticking);
-          notators[scoreKey].generateNotation(scores[scoreKey]);
-        }
+        generateContexts();
       }
     }
   </script>
