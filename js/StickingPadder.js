@@ -1,8 +1,8 @@
-function StickingPadder() {
+function StickingPadder(options = {}) {
+  this.length = options.length || 16;
 
   this.pad = function(sticking) {
-    // TODO: 16th note triplets
-    var remainingLength = 16;
+    var remainingLength = Number(this.length);
     var finalString = '';
 
     while (remainingLength > 0) {

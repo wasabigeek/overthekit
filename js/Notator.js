@@ -24,6 +24,11 @@ function Notator(options) {
   }
 
   this.toDuration = function(noteGroup) {
+    // workaround for 16th note triplets
+    if (noteGroup.duration.equals(new Fraction(DURATION_SIXTEENTH_TRIPLET))) {
+      return '16';
+    }
+
     return String(1 / noteGroup.duration);
   }
 
@@ -40,16 +45,17 @@ function Notator(options) {
 
   this.addStave = function(subScore, staveOptions = {}) {
     var stave = this.vf.Stave(staveOptions)
-      .addClef('percussion')
       .addTimeSignature(subScore.timeSignature);
 
     var tickables = [];
     var beamer = new Beamer({ vf: this.vf, beatValue: subScore.getBeatValue() })
+    var tupler = new Tupler({ vf: this.vf, beatValue: subScore.getBeatValue() })
     var processNoteGroup = function(noteGroup) {
       var tickable = this.vf.StaveNote(this.toNotation(noteGroup));
       tickables.push(tickable);
 
       beamer.add(tickable, noteGroup.duration)
+      tupler.add(tickable, noteGroup.duration)
     }
     subScore.forEach(processNoteGroup.bind(this));
 
@@ -89,14 +95,14 @@ function Notator(options) {
  */
 function Beamer(params = {}) {
   this.currentBeamGroup = [];
-  this.currentBeamCounter = 0;
+  this.currentBeamCounter = new Fraction(0);
   this.beatValue = params.beatValue;
   this.vf = params.vf;
 
   this.add = function(tickable, duration) {
     if (this.currentBeamCounter < this.beatValue) {
       this.currentBeamGroup.push(tickable);
-      this.currentBeamCounter += duration;
+      this.currentBeamCounter = this.currentBeamCounter.add(duration);
     }
 
     if (this.currentBeamCounter >= this.beatValue) {
@@ -107,7 +113,48 @@ function Beamer(params = {}) {
       }
 
       this.currentBeamGroup = [];
-      this.currentBeamCounter = 0;
+      this.currentBeamCounter = new Fraction(0);
+    }
+  }
+}
+
+function Tupler(params = {}) {
+  this.beatValue = params.beatValue;
+  this.vf = params.vf;
+
+  this.currentTuple = [];
+  this.currentDurationCount = new Fraction(0);
+
+  this.isTuple = function(duration) {
+    if (duration.equals(new Fraction(DURATION_SIXTEENTH_TRIPLET))) {
+      return true;
+    }
+    return false;
+  }
+
+  // FIXME: this only handles 16th note triplets over a 1/4 note beat
+  this.add = function(tickable, duration) {
+    if (this.currentDurationCount < this.beatValue) {
+      if (this.isTuple(duration)) {
+        this.currentTuple.push(tickable);
+      }
+      this.currentDurationCount = this.currentDurationCount.add(duration);
+    }
+
+    if (this.currentDurationCount >= this.beatValue) {
+      if (this.currentTuple.length > 0) {
+        this.vf.Tuplet({
+          notes: this.currentTuple,
+          options: {
+            num_notes: this.currentTuple.length,
+            notes_occupied: 4,
+            ratioed: false,
+          }
+        })
+      }
+
+      this.currentTuple = [];
+      this.currentDurationCount = new Fraction(0);
     }
   }
 }
