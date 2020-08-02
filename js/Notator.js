@@ -44,27 +44,12 @@ function Notator(options) {
       .addTimeSignature(subScore.timeSignature);
 
     var tickables = [];
-    var currentBeamGroup = [];
-    var currentBeamCounter = 0;
+    var beamer = new Beamer({ vf: this.vf, beatValue: subScore.getBeatValue() })
     var processNoteGroup = function(noteGroup) {
       var tickable = this.vf.StaveNote(this.toNotation(noteGroup));
       tickables.push(tickable);
 
-      if (currentBeamCounter < subScore.getBeatValue()) {
-        currentBeamGroup.push(tickable);
-        currentBeamCounter += noteGroup.duration;
-      }
-
-      if (currentBeamCounter >= subScore.getBeatValue()) {
-        try {
-          this.vf.Beam({ notes: currentBeamGroup });
-        } catch(error) {
-          console.warn(error);
-        }
-
-        currentBeamGroup = [];
-        currentBeamCounter = 0;
-      }
+      beamer.add(tickable, noteGroup.duration)
     }
     subScore.forEach(processNoteGroup.bind(this));
 
@@ -98,4 +83,31 @@ function Notator(options) {
   }
 }
 
+/**
+ * Beams StaveNotes depending on their duration.
+ * Mutates vf.
+ */
+function Beamer(params = {}) {
+  this.currentBeamGroup = [];
+  this.currentBeamCounter = 0;
+  this.beatValue = params.beatValue;
+  this.vf = params.vf;
 
+  this.add = function(tickable, duration) {
+    if (this.currentBeamCounter < this.beatValue) {
+      this.currentBeamGroup.push(tickable);
+      this.currentBeamCounter += duration;
+    }
+
+    if (this.currentBeamCounter >= this.beatValue) {
+      try {
+        this.vf.Beam({ notes: this.currentBeamGroup });
+      } catch(error) {
+        console.warn(error);
+      }
+
+      this.currentBeamGroup = [];
+      this.currentBeamCounter = 0;
+    }
+  }
+}
