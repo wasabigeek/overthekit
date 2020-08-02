@@ -1,8 +1,13 @@
 function Orchestrator(options) {
   this.drumset = options.drumset;
-  this.allowedOrchestrations = options.allowedOrchestrations;
 
-  this.orchestrate = function(sticking) {
+  this.getOrchestration = function() {
+    // global variable
+    var allowedOrchestrations = getOrchestrations();
+    return allowedOrchestrations[Math.round(Math.random() * (allowedOrchestrations.length - 1))]
+  }
+
+  var orchestrate = function(sticking) {
     var score = new Score();
 
     var previousSticking;
@@ -17,7 +22,7 @@ function Orchestrator(options) {
       } else if (previousSticking == stick) {
         instrument = previousOrchestration;
       } else {
-        instrument = this.allowedOrchestrations[Math.round(Math.random() * (this.allowedOrchestrations.length - 1))];
+        instrument = this.getOrchestration();
       }
       note = new Note({ instrument: instrument, volume: 1 });
 
@@ -30,4 +35,5 @@ function Orchestrator(options) {
 
     return score;
   }
+  this.orchestrate = orchestrate.bind(this);
 }

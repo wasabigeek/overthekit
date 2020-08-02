@@ -195,6 +195,18 @@
       '1BarFill16Triplets': new Score(),
     }
 
+    var getOrchestrations = function() {
+      var orchestrations = [];
+      // this is coupled to the UI / instruments for simplicity, might want to relook this
+      if (document.getElementById('hihatCheckbox').checked) { orchestrations.push(drumset.hihat) }
+      if (document.getElementById('snareCheckbox').checked) { orchestrations.push(drumset.snare) }
+      if (document.getElementById('hiTomCheckbox').checked) { orchestrations.push(drumset.tom1) }
+      if (document.getElementById('midTomCheckbox').checked) { orchestrations.push(drumset.tom2) }
+      if (document.getElementById('floorTomCheckbox').checked) { orchestrations.push(drumset.tom3) }
+
+      return orchestrations;
+    }
+
     function Score(noteGroups = [], options = {}) {
       this.noteGroups = noteGroups;
       this.options = options;  // for copying
@@ -283,11 +295,50 @@
       audioContext = new AudioContext();
 
       var drumsetAudioBuffers = new DrumsetAudioBuffers(audioContext);
+      drumset = new Drumset(drumsetAudioBuffers, NOTATOR_POSITIONS);
 
-      var scoreGenerators = {
-        'fill16': generateScore,
-        '1BarFill16': generateScoreBar,
-        '1BarFill16Triplets': generateScoreTriplets
+      var stickingContexts = {
+        'fill16': new StickingContext({
+          pipeline: [
+            new Orchestrator({ drumset: drumset }).orchestrate,
+            function(score) {
+              score.forEach(function(grouping) { grouping.setDuration(DURATION_SIXTEENTH) });
+              return score;
+            },
+            function(score) {
+              var groove = new GrooveGenerator({ drumset: drumset }).generate({ duration: 1 - score.sumDuration() });
+              return groove.concat(score);
+            }
+          ]
+        }),
+        '1BarFill16': new StickingContext({
+          pipeline: [
+            new StickingPadder().pad,
+            new Orchestrator({ drumset: drumset }).orchestrate,
+            function(score) {
+              score.forEach(function(grouping) { grouping.setDuration(DURATION_SIXTEENTH) });
+              return score;
+            },
+            function(score) {
+              var groove = new GrooveGenerator({ drumset: drumset }).generate({ duration: 2 - score.sumDuration() });
+              return groove.concat(score);
+            }
+          ]
+        }),
+        '1BarFill16Triplets': new StickingContext({
+          pipeline: [
+            new StickingPadder({ desiredLength: 24 }).pad,
+            new Orchestrator({ drumset: drumset }).orchestrate,
+            function(score) {
+              score.forEach(function(grouping) { grouping.setDuration(DURATION_SIXTEENTH_TRIPLET) });
+              return score;
+            },
+            function(score) {
+              var groove = new GrooveGenerator({ drumset: drumset }).generate({ duration: 2 - score.sumDuration() });
+              return groove.concat(score);
+            }
+          ]
+        }),
       }
       var notators = {
         'fill16': new Notator({ elementId: 'fill16' }),
@@ -296,78 +347,23 @@
       }
       var player = new Player({ audioContext: audioContext })
 
-      drumset = new Drumset(drumsetAudioBuffers, NOTATOR_POSITIONS);
+      /**
+       * Determines how the sticking is interpreted.
+       */
+      function StickingContext(params = {}) {
+        this.pipeline = params.pipeline;
 
-      function getOrchestrations() {
-        var orchestrations = [];
-        // this is coupled to the UI / instruments for simplicity, might want to relook this
-        if (document.getElementById('hihatCheckbox').checked) { orchestrations.push(drumset.hihat) }
-        if (document.getElementById('snareCheckbox').checked) { orchestrations.push(drumset.snare) }
-        if (document.getElementById('hiTomCheckbox').checked) { orchestrations.push(drumset.tom1) }
-        if (document.getElementById('midTomCheckbox').checked) { orchestrations.push(drumset.tom2) }
-        if (document.getElementById('floorTomCheckbox').checked) { orchestrations.push(drumset.tom3) }
-
-        return orchestrations;
-      }
-
-      // FIXME: refactor
-      function generateScore(sticking, options = {}) {
-        var orchestrations = options.orchestrations || getOrchestrations();
-
-        var newScore = new Orchestrator({ drumset: drumset, allowedOrchestrations: orchestrations })
-          .orchestrate(sticking);
-
-        newScore.forEach(function(grouping) {
-          grouping.setDuration(DURATION_SIXTEENTH);
-        });
-
-        var duration = newScore.sumDuration();
-        var groove = new GrooveGenerator({ drumset: drumset }).generate({ duration: 1 - duration });
-
-        return groove.concat(newScore);
-      }
-
-      // FIXME: refactor
-      function generateScoreBar(sticking, options = {}) {
-        var orchestrations = options.orchestrations || getOrchestrations();
-
-        var newSticking = new StickingPadder().pad(sticking);
-
-        var newScore = new Orchestrator({ drumset: drumset, allowedOrchestrations: orchestrations })
-          .orchestrate(newSticking);
-
-        newScore.forEach(function(grouping) {
-          grouping.setDuration(DURATION_SIXTEENTH);
-        });
-
-        var duration = newScore.sumDuration();
-        var groove = new GrooveGenerator({ drumset: drumset }).generate({ duration: 2 - duration });
-
-        return groove.concat(newScore);
-      }
-
-      // FIXME: refactor
-      function generateScoreTriplets(sticking, options = {}) {
-        var orchestrations = options.orchestrations || getOrchestrations();
-
-        var newSticking = new StickingPadder({ length: 24 }).pad(sticking);
-
-        var newScore = new Orchestrator({ drumset: drumset, allowedOrchestrations: orchestrations })
-          .orchestrate(newSticking);
-
-        newScore.forEach(function(grouping) {
-          grouping.setDuration(DURATION_SIXTEENTH_TRIPLET);
-        });
-
-        var duration = newScore.sumDuration();
-        var groove = new GrooveGenerator({ drumset: drumset }).generate({ duration: 2 - duration });
-
-        return groove.concat(newScore);
+        var generate = function(sticking, options = {}) {
+          return this.pipeline.reduce(function(output, processingFunction) {
+            return processingFunction(output);
+          }, sticking);
+        }
+        this.generate = generate.bind(this);
       }
 
       var newSticking = document.getElementById('sticking').value;
       for (var scoreKey in scores) {
-        scores[scoreKey] = scoreGenerators[scoreKey](newSticking);
+        scores[scoreKey] = stickingContexts[scoreKey].generate(newSticking);
         notators[scoreKey].generateNotation(scores[scoreKey]);
       }
 
@@ -386,7 +382,7 @@
         e.preventDefault();
         var newSticking = document.getElementById('sticking').value;
         for (var scoreKey in scores) {
-          scores[scoreKey] = scoreGenerators[scoreKey](newSticking);
+          scores[scoreKey] = stickingContexts[scoreKey](newSticking);
           notators[scoreKey].generateNotation(scores[scoreKey]);
         }
       }

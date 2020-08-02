@@ -1,8 +1,8 @@
 function StickingPadder(options = {}) {
-  this.length = options.length || 16;
+  this.desiredLength = options.desiredLength || 16;
 
-  this.pad = function(sticking) {
-    var remainingLength = Number(this.length);
+  var pad = function(sticking) {
+    var remainingLength = Number(this.desiredLength);
     var finalString = '';
 
     var previousSticking = '';
@@ -26,4 +26,5 @@ function StickingPadder(options = {}) {
 
     return finalString;
   }
+  this.pad = pad.bind(this);
 }
