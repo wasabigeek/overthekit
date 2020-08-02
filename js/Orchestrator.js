@@ -5,20 +5,27 @@ function Orchestrator(options) {
   this.orchestrate = function(sticking) {
     var score = new Score();
 
+    var previousSticking;
+    var previousOrchestration;
     for (var stick of sticking) {
       var note;
-      // attempt to make it sound slightly more organic with volume variations
-      var volume = 1 - Math.random() * 0.2;
 
+      var instrument;
       if (stick.toUpperCase() == 'K') {
-        note = new Note({ instrument: this.drumset.kick, volume: volume });
+        instrument = this.drumset.kick;
+      // repeated notes should be on the same drum
+      } else if (previousSticking == stick) {
+        instrument = previousOrchestration;
       } else {
-        var instrument = this.allowedOrchestrations[Math.round(Math.random() * (this.allowedOrchestrations.length - 1))];
-        note = new Note({ instrument: instrument, volume: volume });
+        instrument = this.allowedOrchestrations[Math.round(Math.random() * (this.allowedOrchestrations.length - 1))];
       }
+      note = new Note({ instrument: instrument, volume: 1 });
 
       var grouping = new NoteGroup([note]);
       score.push(grouping);
+
+      previousSticking = stick;
+      previousOrchestration = instrument;
     }
 
     return score;

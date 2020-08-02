@@ -5,17 +5,23 @@ function StickingPadder(options = {}) {
     var remainingLength = Number(this.length);
     var finalString = '';
 
+    var previousSticking = '';
     while (remainingLength > 0) {
       var next;
       if (remainingLength > sticking.length) {
         next = sticking;
       } else {
-        // FIXME: alternate
-        next = 'R'.repeat(remainingLength);
+        // workaround to alternate for padding
+        if (previousSticking == 'L') {
+          next = 'R';
+        } else {
+          next = 'L';
+        }
       }
       finalString = finalString.concat(next);
 
-      remainingLength -= sticking.length;
+      remainingLength -= next.length;
+      previousSticking = next;
     }
 
     return finalString;
